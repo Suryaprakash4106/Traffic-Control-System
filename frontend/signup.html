@@ -23,11 +23,10 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            /* New Background Image - Night Traffic */
             background: url(traffic.jpg) no-repeat center center/cover;
             position: relative;
         }
-        /* Overlay to darken background for readability */
+        
         body::before {
             content: '';
             position: absolute;
@@ -40,7 +39,7 @@
         }
 
         .signup-container {
-            width: 600px;   /*  Increased width */
+            width: 600px;
             padding: 35px;
             border-radius: 20px;
             background: rgba(255, 255, 255, 0.1);
@@ -172,16 +171,16 @@
             transform: translateY(-50%);
             cursor: pointer;
         }
+        
         select {
-    background: transparent;
-    color: white;
-}
+            background: transparent;
+            color: white;
+        }
 
-select option {
-    background: #2c2b2b;
-    color: white;
-}
-
+        select option {
+            background: #2c2b2b;
+            color: white;
+        }
     </style>
 </head>
 
@@ -215,89 +214,73 @@ select option {
                 </div>
             </div>
 
-            <!-- MOBILE ROW -->
-<div class="form-row">
+            <!-- Mobile Number Row (No OTP - Just for data) -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Mobile Number</label>
+                    <div class="input-wrapper">
+                        <input type="tel" id="mobile" required>
+                        <i class="fas fa-phone input-icon"></i>
+                    </div>
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label>Mobile Number</label>
-        <div class="input-wrapper">
-            <input type="tel" id="mobile" required>
-            <i class="fas fa-phone input-icon"></i>
-            <button type="button" class="otp-btn" onclick="sendMobileOTP()">Send OTP</button>
-        </div>
-    </div>
+            <!-- EMAIL ROW -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Email</label>
+                    <div class="input-wrapper">
+                        <input type="email" id="email" required>
+                        <i class="fas fa-envelope input-icon"></i>
+                        <button type="button" class="otp-btn" onclick="sendEmailOTP()">Send OTP</button>
+                    </div>
+                </div>
 
-    <div class="form-group">
-        <label>Mobile OTP</label>
-        <div style="display:flex; gap:8px;">
-            <input type="text" id="mobileOTP" maxlength="6">
-            <button type="button" class="verify-btn" onclick="verifyMobile()">Verify</button>
-        </div>
-    </div>
+                <div class="form-group">
+                    <label>Email OTP</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="emailOTP" maxlength="6">
+                        <button type="button" class="verify-btn" onclick="verifyEmail()">Verify</button>
+                    </div>
+                </div>
+            </div>
 
-</div>
+            <!-- ROLE + PASSWORD ROW -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Select Role</label>
+                    <div class="input-wrapper">
+                        <select id="role" required>
+                            <option value="">Choose role</option>
+                            <option value="operator">Operator</option>
+                            <option value="traffic_police">Traffic Police</option>
+                            <option value="police">Police</option>
+                        </select>
+                        <i class="fas fa-user-shield input-icon"></i>
+                    </div>
+                </div>
 
-<!-- EMAIL ROW -->
-<div class="form-row">
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" required>
+                        <i class="fas fa-lock input-icon"></i>
+                        <i class="fas fa-eye toggle-password"
+                           onclick="togglePassword('password', this)"></i>
+                    </div>
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label>Email</label>
-        <div class="input-wrapper">
-            <input type="email" id="email" required>
-            <i class="fas fa-envelope input-icon"></i>
-            <button type="button" class="otp-btn" onclick="sendEmailOTP()">Send OTP</button>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label>Email OTP</label>
-        <div style="display:flex; gap:8px;">
-            <input type="text" id="emailOTP" maxlength="6">
-            <button type="button" class="verify-btn" onclick="verifyEmail()">Verify</button>
-        </div>
-    </div>
-
-</div>
-
-<!-- ROLE + PASSWORD ROW -->
-<div class="form-row">
-
-    <div class="form-group">
-        <label>Select Role</label>
-        <div class="input-wrapper">
-            <select id="role" required>
-                <option value="">Choose role</option>
-            
-                <option value="operator">Operator</option>
-                <option value="traffic_police">Traffic Police</option>
-                <option value="police">Police</option>
-            </select>
-            <i class="fas fa-user-shield input-icon"></i>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label>Password</label>
-        <div class="input-wrapper">
-            <input type="password" id="password" required>
-            <i class="fas fa-lock input-icon"></i>
-            <i class="fas fa-eye toggle-password"
-               onclick="togglePassword('password', this)"></i>
-        </div>
-    </div>
-
-</div>
-
-<!-- CONFIRM PASSWORD CENTER -->
-<div class="form-group" style="max-width:260px; margin:0 auto 18px;">
-    <label>Confirm Password</label>
-    <div class="input-wrapper">
-        <input type="password" id="confirmPassword" required>
-        <i class="fas fa-lock input-icon"></i>
-        <i class="fas fa-eye toggle-password"
-           onclick="togglePassword('confirmPassword', this)"></i>
-    </div>
-</div>
+            <!-- CONFIRM PASSWORD CENTER -->
+            <div class="form-group" style="max-width:260px; margin:0 auto 18px;">
+                <label>Confirm Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="confirmPassword" required>
+                    <i class="fas fa-lock input-icon"></i>
+                    <i class="fas fa-eye toggle-password"
+                       onclick="togglePassword('confirmPassword', this)"></i>
+                </div>
+            </div>
 
             <button class="btn-signup">CREATE ACCOUNT</button>
 
@@ -309,100 +292,8 @@ select option {
     </div>
 
 <script>
-let mobileVerified = false;
 let emailVerified = false;
-let currentMobile = '';
 let currentEmail = '';
-
-// ==================== MOBILE OTP FUNCTIONS ====================
-async function sendMobileOTP() {
-    const mobile = document.getElementById('mobile').value;
-    
-    if (!mobile) {
-        alert('Enter mobile number');
-        return;
-    }
-    
-    if (!/^\d{10}$/.test(mobile)) {
-        alert('Enter valid 10-digit mobile number');
-        return;
-    }
-    
-    currentMobile = mobile;
-    const btn = event.target;
-    const originalText = btn.innerText;
-    btn.innerText = "Sending...";
-    btn.disabled = true;
-    
-    try {
-        const response = await fetch('https://traffic-control-system-y9s8.onrender.com/send-mobile-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mobile })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            alert(' OTP sent! Check TERMINAL for OTP code');
-            console.log('📱 Mobile OTP sent to:', mobile);
-        } else {
-            alert('Error: ' + (data.error || 'Failed to send OTP'));
-        }
-    } catch (error) {
-        alert('Connection error: ' + error.message);
-    } finally {
-        btn.innerText = originalText;
-        btn.disabled = false;
-    }
-}
-
-async function verifyMobile() {
-    const otp = document.getElementById('mobileOTP').value;
-    const mobile = currentMobile || document.getElementById('mobile').value;
-    
-    if (!otp) {
-        alert('Enter OTP');
-        return;
-    }
-    
-    if (otp.length !== 6) {
-        alert('OTP must be 6 digits');
-        return;
-    }
-    
-    const btn = event.target;
-    const originalText = btn.innerText;
-    btn.innerText = "Verifying...";
-    btn.disabled = true;
-    
-    try {
-        const response = await fetch('https://traffic-control-system-y9s8.onrender.com/verify-mobile-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mobile, otp })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            mobileVerified = true;
-            alert(" Mobile Verified Successfully!");
-            document.getElementById('mobileOTP').disabled = true;
-            document.getElementById('mobile').disabled = true;
-            btn.innerText = "Verified ✓";
-            btn.style.background = "#00c853";
-        } else {
-            alert('Error: ' + (data.error || 'Invalid OTP'));
-            btn.innerText = originalText;
-            btn.disabled = false;
-        }
-    } catch (error) {
-        alert('Connection error: ' + error.message);
-        btn.innerText = originalText;
-        btn.disabled = false;
-    }
-}
 
 // ==================== EMAIL OTP FUNCTIONS ====================
 async function sendEmailOTP() {
@@ -497,8 +388,8 @@ async function verifyEmail() {
 async function handleSignup(event) {
     event.preventDefault();
 
-    if (!mobileVerified || !emailVerified) {
-        alert(" Please verify both Mobile and Email OTP first");
+    if (!emailVerified) {
+        alert(" Please verify Email OTP first");
         return;
     }
 
