@@ -43,13 +43,14 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Session configuration - Use memory store (for Render compatibility)
 app.use(
   session({
-    secret: "opsmind_secret",
+    secret: process.env.SESSION_SECRET || "opsmind_secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false,
+      secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000
     }
@@ -74,7 +75,8 @@ app.get("/", (req, res) => {
     res.send("Backend Working - Traffic System API");
 });
 
-const PORT = 3000;
+// -------------------- FIX: Use PORT from environment variable --------------------
+const PORT = process.env.PORT || 3000;
 
 // -------------------- MongoDB connection --------------------
 async function connectDB() {
@@ -655,6 +657,22 @@ app.post("/api/resend-otp", async (req, res) => {
 });
 
 // ==================== OAuth Routes ====================
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "/auth/google/callback"
+  },
+  (accessToken, refreshToken, profile, done) => done(null, profile)
+));
+
+passport.use(new GitHubStrategy({
+    clientID: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    callbackURL: "/auth/github/callback"
+  },
+  (accessToken, refreshToken, profile, done) => done(null, profile)
+));
+
 app.get("/auth/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
@@ -684,6 +702,6 @@ app.get("/auth/github/callback",
 );
 
 // ==================== Start server ====================
-app.listen(PORT, () =>
-  console.log(` Server running at http://localhost:${PORT}`)
+app.listen(PORT, '0.0.0.0', () =>
+  console.log(` Server running on port ${PORT}`)
 );
