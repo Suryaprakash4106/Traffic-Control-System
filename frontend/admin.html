@@ -677,6 +677,75 @@
             }
         }
 
+        /* Toast Notification */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            background: #fff;
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 100000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-notification.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .toast-notification.error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .toast-notification.info {
+            border-left: 4px solid #38bdf8;
+        }
+
+        .toast-notification i {
+            font-size: 18px;
+        }
+
+        .toast-notification.success i {
+            color: #10b981;
+        }
+
+        .toast-notification.error i {
+            color: #ef4444;
+        }
+
+        .toast-notification.info i {
+            color: #38bdf8;
+        }
+
+        .toast-notification .toast-close {
+            margin-left: auto;
+            cursor: pointer;
+            color: #94a3b8;
+        }
+
+        body.dark-mode .toast-notification {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
         /* Modal Styles */
         .modal-overlay {
             display: none;
@@ -954,6 +1023,36 @@
 
     <!-- JAVASCRIPT -->
     <script>
+        // ==================== TOAST NOTIFICATION ====================
+        function showToast(message, type = 'info') {
+            const existingToast = document.querySelector('.toast-notification');
+            if (existingToast) existingToast.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            
+            let icon = '';
+            if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
+            else if (type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
+            else icon = '<i class="fas fa-info-circle"></i>';
+            
+            toast.innerHTML = `
+                ${icon}
+                <span>${message}</span>
+                <i class="fas fa-times toast-close"></i>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+            
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+        }
+
         // ==================== DARK MODE TOGGLE ====================
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
@@ -986,6 +1085,7 @@
         // ==================== OTP VERIFICATION ====================
         let otpTimer = null;
         let timeLeft = 300;
+        let isOtpVerified = false;
 
         function moveToNext(input, index) {
             if (input.value.length === 1 && index < 5) {
@@ -1003,6 +1103,11 @@
             if (otpTimer) clearInterval(otpTimer);
             
             otpTimer = setInterval(() => {
+                if (isOtpVerified) {
+                    clearInterval(otpTimer);
+                    return;
+                }
+                
                 timeLeft--;
                 const minutes = Math.floor(timeLeft / 60);
                 const seconds = timeLeft % 60;
@@ -1021,8 +1126,10 @@
             const email = userData.email;
             
             if (!email) {
-                alert('User email not found. Please login again.');
-                window.location.href = 'login.html';
+                showToast('User email not found. Please login again.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
                 return;
             }
 
@@ -1040,18 +1147,18 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    alert(' OTP sent to your email!');
+                    showToast('OTP sent to your email! Check spam folder if not received.', 'success');
                     startOTPTimer();
                     verifyBtn.disabled = false;
                     verifyBtn.innerHTML = 'Verify & Continue';
                 } else {
-                    alert(' Failed to send OTP: ' + (data.error || 'Unknown error'));
+                    showToast('Failed to send OTP: ' + (data.error || 'Unknown error'), 'error');
                     verifyBtn.disabled = false;
                     verifyBtn.innerHTML = 'Verify & Continue';
                 }
             } catch (error) {
                 console.error('Error sending OTP:', error);
-                alert(' Connection error. Please try again.');
+                showToast('Connection error. Please try again.', 'error');
                 verifyBtn.disabled = false;
                 verifyBtn.innerHTML = 'Verify & Continue';
             }
@@ -1068,7 +1175,7 @@
             const enteredOTP = otp0 + otp1 + otp2 + otp3 + otp4 + otp5;
             
             if (enteredOTP.length !== 6) {
-                alert('Please enter complete 6-digit OTP');
+                showToast('Please enter complete 6-digit OTP', 'error');
                 return;
             }
 
@@ -1080,14 +1187,16 @@
             verifyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
             verifyBtn.disabled = true;
 
-            // For testing: allow 123456
+            // FOR TESTING ONLY - 123456 works for testing
             if (enteredOTP === '123456') {
+                isOtpVerified = true;
                 document.getElementById('otpModal').style.display = 'none';
                 document.getElementById('mainContent').style.display = 'block';
-                clearInterval(otpTimer);
+                if (otpTimer) clearInterval(otpTimer);
                 sessionStorage.setItem('adminOTPVerified', 'true');
                 updateUserProfile();
                 fetchUsers();
+                showToast('OTP verified successfully!', 'success');
                 verifyBtn.innerHTML = originalText;
                 verifyBtn.disabled = false;
                 return;
@@ -1101,14 +1210,16 @@
             .then(response => response.json())
             .then(data => {
                 if (data.message === "Email verified successfully") {
+                    isOtpVerified = true;
                     document.getElementById('otpModal').style.display = 'none';
                     document.getElementById('mainContent').style.display = 'block';
-                    clearInterval(otpTimer);
+                    if (otpTimer) clearInterval(otpTimer);
                     sessionStorage.setItem('adminOTPVerified', 'true');
                     updateUserProfile();
                     fetchUsers();
+                    showToast('OTP verified successfully! Welcome Admin.', 'success');
                 } else {
-                    alert(' Invalid OTP. Please try again.');
+                    showToast('Invalid OTP. Please try again.', 'error');
                     for (let i = 0; i < 6; i++) {
                         document.getElementById(`otp${i}`).value = '';
                     }
@@ -1117,7 +1228,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert(' Connection error. Please try again.');
+                showToast('Connection error. Please try again.', 'error');
             })
             .finally(() => {
                 verifyBtn.innerHTML = originalText;
@@ -1136,8 +1247,10 @@
             
             // Double-check admin role
             if (userData.role !== 'admin') {
-                alert(' Admin access only. Redirecting to dashboard.');
-                window.location.href = 'dashboard.html';
+                showToast('Admin access only. Redirecting to dashboard.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
                 return;
             }
             
@@ -1370,7 +1483,7 @@
                 }
             } catch (error) {
                 console.error('Error fetching activity:', error);
-                alert('Failed to load user activity');
+                showToast('Failed to load user activity', 'error');
             }
         }
 
@@ -1394,12 +1507,13 @@
                     user.status = newStatus;
                     displayUsers();
                     updateStats();
+                    showToast(`User ${newStatus === 'active' ? 'unblocked' : 'blocked'} successfully`, 'success');
                 } else {
-                    alert('Failed to update user status');
+                    showToast('Failed to update user status', 'error');
                 }
             } catch (error) {
                 console.error('Error updating status:', error);
-                alert('Connection error');
+                showToast('Connection error', 'error');
             }
         }
 
