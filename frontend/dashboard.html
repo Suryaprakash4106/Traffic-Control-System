@@ -951,7 +951,7 @@
         // ==================== THINGSPEAK DATA FETCH ====================
         async function fetchTrafficData() {
             try {
-                const response = await fetch('http://localhost:3000/api/traffic-data');
+                const response = await fetch('https://traffic-control-system-y9s8.onrender.com/api/traffic-data');
                 const data = await response.json();
                 
                 if (data.feeds && data.feeds.length > 0) {

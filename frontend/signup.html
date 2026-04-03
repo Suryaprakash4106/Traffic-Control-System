@@ -335,7 +335,7 @@ async function sendMobileOTP() {
     btn.disabled = true;
     
     try {
-        const response = await fetch('http://localhost:3000/send-mobile-otp', {
+        const response = await fetch('https://traffic-control-system-y9s8.onrender.com/send-mobile-otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ mobile })
@@ -377,7 +377,7 @@ async function verifyMobile() {
     btn.disabled = true;
     
     try {
-        const response = await fetch('http://localhost:3000/verify-mobile-otp', {
+        const response = await fetch('https://traffic-control-system-y9s8.onrender.com/verify-mobile-otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ mobile, otp })
@@ -425,7 +425,7 @@ async function sendEmailOTP() {
     btn.disabled = true;
     
     try {
-        const response = await fetch('http://localhost:3000/send-email-otp', {
+        const response = await fetch('https://traffic-control-system-y9s8.onrender.com/send-email-otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -466,7 +466,7 @@ async function verifyEmail() {
     btn.disabled = true;
     
     try {
-        const response = await fetch('http://localhost:3000/verify-email-otp', {
+        const response = await fetch('https://traffic-control-system-y9s8.onrender.com/verify-email-otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, otp })
@@ -532,7 +532,7 @@ async function handleSignup(event) {
     btn.disabled = true;
 
     try {
-        const response = await fetch('http://localhost:3000/signup', {
+        const response = await fetch('https://traffic-control-system-y9s8.onrender.com/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
