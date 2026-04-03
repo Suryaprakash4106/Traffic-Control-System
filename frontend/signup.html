@@ -39,7 +39,7 @@
         }
 
         .signup-container {
-            width: 600px;
+            width: 550px;
             padding: 35px;
             border-radius: 20px;
             background: rgba(255, 255, 255, 0.1);
@@ -114,20 +114,6 @@
             color: #fff;
             font-size: 0.7rem;
             cursor: pointer;
-        }
-
-        .otp-inputs {
-            display: flex;
-            gap: 6px;
-            margin-top: 5px;
-        }
-
-        .otp-inputs input {
-            width: 35px;
-            height: 35px;
-            text-align: center;
-            border-radius: 8px;
-            padding: 0;
         }
 
         .verify-btn {
@@ -210,17 +196,6 @@
                     <div class="input-wrapper">
                         <input type="text" id="lastName" required>
                         <i class="fas fa-user input-icon"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Mobile Number Row (No OTP - Just for data) -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Mobile Number</label>
-                    <div class="input-wrapper">
-                        <input type="tel" id="mobile" required>
-                        <i class="fas fa-phone input-icon"></i>
                     </div>
                 </div>
             </div>
@@ -396,13 +371,12 @@ async function handleSignup(event) {
     const firstName = document.getElementById('firstName').value;
     const lastName = document.getElementById('lastName').value;
     const email = document.getElementById('email').value;
-    const mobile = document.getElementById('mobile').value;
     const password = document.getElementById('password').value;
     const confirmPass = document.getElementById('confirmPassword').value;
     const role = document.getElementById('role').value;
 
     // Validation
-    if (!firstName || !lastName || !email || !mobile || !password || !confirmPass || !role) {
+    if (!firstName || !lastName || !email || !password || !confirmPass || !role) {
         alert('Please fill all fields');
         return;
     }
@@ -430,7 +404,6 @@ async function handleSignup(event) {
                 firstName, 
                 lastName, 
                 email, 
-                mobile,
                 password, 
                 role 
             })
