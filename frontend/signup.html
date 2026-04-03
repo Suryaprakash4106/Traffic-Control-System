@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Control System - Sign Up</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* New Background Image - Night Traffic */
+            background: url(traffic.jpg) no-repeat center center/cover;
+            position: relative;
+        }
+        /* Overlay to darken background for readability */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 20, 40, 0.75), rgba(0, 10, 20, 0.6));
+            z-index: -1;
+        }
+
+        .signup-container {
+            width: 600px;   /*  Increased width */
+            padding: 35px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            color: #fff;
+        }
+
+        .signup-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .signup-header h2 {
+            font-size: 1.8rem;
+        }
+
+        .signup-header p {
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-group {
+            flex: 1;
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input, select {
+            width: 100%;
+            height: 40px;
+            padding: 0 15px 0 42px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            color: #fff;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+
+        .otp-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 6px 12px;
+            background: linear-gradient(45deg, #005c97, #363795);
+            border: none;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .otp-inputs {
+            display: flex;
+            gap: 6px;
+            margin-top: 5px;
+        }
+
+        .otp-inputs input {
+            width: 35px;
+            height: 35px;
+            text-align: center;
+            border-radius: 8px;
+            padding: 0;
+        }
+
+        .verify-btn {
+            margin-top: 8px;
+            padding: 6px 15px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(45deg, #005c97, #363795);
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .btn-signup {
+            width: 100%;
+            height: 48px;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(45deg, #005c97, #363795);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .login-link a {
+            color: #00d2ff;
+            text-decoration: none;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+        select {
+    background: transparent;
+    color: white;
+}
+
+select option {
+    background: #2c2b2b;
+    color: white;
+}
+
+    </style>
+</head>
+
+<body>
+
+    <div class="signup-container">
+
+        <div class="signup-header">
+            <h2>Create Account</h2>
+            <p>Join SmartFlow Traffic System</p>
+        </div>
+
+        <form onsubmit="return handleSignup(event)">
+
+            <!-- Name Row -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="firstName" required>
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="lastName" required>
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MOBILE ROW -->
+<div class="form-row">
+
+    <div class="form-group">
+        <label>Mobile Number</label>
+        <div class="input-wrapper">
+            <input type="tel" id="mobile" required>
+            <i class="fas fa-phone input-icon"></i>
+            <button type="button" class="otp-btn" onclick="sendMobileOTP()">Send OTP</button>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Mobile OTP</label>
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="mobileOTP" maxlength="6">
+            <button type="button" class="verify-btn" onclick="verifyMobile()">Verify</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- EMAIL ROW -->
+<div class="form-row">
+
+    <div class="form-group">
+        <label>Email</label>
+        <div class="input-wrapper">
+            <input type="email" id="email" required>
+            <i class="fas fa-envelope input-icon"></i>
+            <button type="button" class="otp-btn" onclick="sendEmailOTP()">Send OTP</button>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Email OTP</label>
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="emailOTP" maxlength="6">
+            <button type="button" class="verify-btn" onclick="verifyEmail()">Verify</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- ROLE + PASSWORD ROW -->
+<div class="form-row">
+
+    <div class="form-group">
+        <label>Select Role</label>
+        <div class="input-wrapper">
+            <select id="role" required>
+                <option value="">Choose role</option>
+            
+                <option value="operator">Operator</option>
+                <option value="traffic_police">Traffic Police</option>
+                <option value="police">Police</option>
+            </select>
+            <i class="fas fa-user-shield input-icon"></i>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Password</label>
+        <div class="input-wrapper">
+            <input type="password" id="password" required>
+            <i class="fas fa-lock input-icon"></i>
+            <i class="fas fa-eye toggle-password"
+               onclick="togglePassword('password', this)"></i>
+        </div>
+    </div>
+
+</div>
+
+<!-- CONFIRM PASSWORD CENTER -->
+<div class="form-group" style="max-width:260px; margin:0 auto 18px;">
+    <label>Confirm Password</label>
+    <div class="input-wrapper">
+        <input type="password" id="confirmPassword" required>
+        <i class="fas fa-lock input-icon"></i>
+        <i class="fas fa-eye toggle-password"
+           onclick="togglePassword('confirmPassword', this)"></i>
+    </div>
+</div>
+
+            <button class="btn-signup">CREATE ACCOUNT</button>
+
+            <div class="login-link">
+                Already have an account? <a href="login.html">Sign In</a>
+            </div>
+
+        </form>
+    </div>
+
+<script>
+let mobileVerified = false;
+let emailVerified = false;
+let currentMobile = '';
+let currentEmail = '';
+
+// ==================== MOBILE OTP FUNCTIONS ====================
+async function sendMobileOTP() {
+    const mobile = document.getElementById('mobile').value;
+    
+    if (!mobile) {
+        alert('Enter mobile number');
+        return;
+    }
+    
+    if (!/^\d{10}$/.test(mobile)) {
+        alert('Enter valid 10-digit mobile number');
+        return;
+    }
+    
+    currentMobile = mobile;
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "Sending...";
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('http://localhost:3000/send-mobile-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mobile })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert(' OTP sent! Check TERMINAL for OTP code');
+            console.log('📱 Mobile OTP sent to:', mobile);
+        } else {
+            alert('Error: ' + (data.error || 'Failed to send OTP'));
+        }
+    } catch (error) {
+        alert('Connection error: ' + error.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function verifyMobile() {
+    const otp = document.getElementById('mobileOTP').value;
+    const mobile = currentMobile || document.getElementById('mobile').value;
+    
+    if (!otp) {
+        alert('Enter OTP');
+        return;
+    }
+    
+    if (otp.length !== 6) {
+        alert('OTP must be 6 digits');
+        return;
+    }
+    
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "Verifying...";
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('http://localhost:3000/verify-mobile-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mobile, otp })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            mobileVerified = true;
+            alert(" Mobile Verified Successfully!");
+            document.getElementById('mobileOTP').disabled = true;
+            document.getElementById('mobile').disabled = true;
+            btn.innerText = "Verified ✓";
+            btn.style.background = "#00c853";
+        } else {
+            alert('Error: ' + (data.error || 'Invalid OTP'));
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    } catch (error) {
+        alert('Connection error: ' + error.message);
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+// ==================== EMAIL OTP FUNCTIONS ====================
+async function sendEmailOTP() {
+    const email = document.getElementById('email').value;
+    
+    if (!email) {
+        alert('Enter email');
+        return;
+    }
+    
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('Enter valid email address');
+        return;
+    }
+    
+    currentEmail = email;
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "Sending...";
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('http://localhost:3000/send-email-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert(' OTP sent to your email! Please check inbox');
+        } else {
+            alert('Error: ' + (data.error || 'Failed to send OTP'));
+        }
+    } catch (error) {
+        alert('Connection error: ' + error.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function verifyEmail() {
+    const otp = document.getElementById('emailOTP').value;
+    const email = currentEmail || document.getElementById('email').value;
+    
+    if (!otp) {
+        alert('Enter OTP');
+        return;
+    }
+    
+    if (otp.length !== 6) {
+        alert('OTP must be 6 digits');
+        return;
+    }
+    
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "Verifying...";
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('http://localhost:3000/verify-email-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, otp })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            emailVerified = true;
+            alert(" Email Verified Successfully!");
+            document.getElementById('emailOTP').disabled = true;
+            document.getElementById('email').disabled = true;
+            btn.innerText = "Verified ✓";
+            btn.style.background = "#00c853";
+        } else {
+            alert('Error: ' + (data.error || 'Invalid OTP'));
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    } catch (error) {
+        alert('Connection error: ' + error.message);
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+// ==================== SIGNUP FUNCTION ====================
+async function handleSignup(event) {
+    event.preventDefault();
+
+    if (!mobileVerified || !emailVerified) {
+        alert(" Please verify both Mobile and Email OTP first");
+        return;
+    }
+
+    const firstName = document.getElementById('firstName').value;
+    const lastName = document.getElementById('lastName').value;
+    const email = document.getElementById('email').value;
+    const mobile = document.getElementById('mobile').value;
+    const password = document.getElementById('password').value;
+    const confirmPass = document.getElementById('confirmPassword').value;
+    const role = document.getElementById('role').value;
+
+    // Validation
+    if (!firstName || !lastName || !email || !mobile || !password || !confirmPass || !role) {
+        alert('Please fill all fields');
+        return;
+    }
+
+    if (password !== confirmPass) {
+        alert('Passwords do not match');
+        return;
+    }
+
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters');
+        return;
+    }
+
+    const btn = document.querySelector('.btn-signup');
+    const originalText = btn.innerText;
+    btn.innerText = "Creating Account...";
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('http://localhost:3000/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                firstName, 
+                lastName, 
+                email, 
+                mobile,
+                password, 
+                role 
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(' Signup successful! Please login.');
+            window.location.href = 'login.html';
+        } else {
+            alert('Error: ' + (data.error || 'Signup failed'));
+        }
+    } catch (error) {
+        alert('Connection error: ' + error.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+// Toggle password visibility
+function togglePassword(id, icon) {
+    const field = document.getElementById(id);
+    field.type = field.type === "password" ? "text" : "password";
+    icon.classList.toggle("fa-eye");
+    icon.classList.toggle("fa-eye-slash");
+}
+
+// Add form submit listener
+document.querySelector('form').addEventListener('submit', handleSignup);
+</script>
+
+</body>
+</html>

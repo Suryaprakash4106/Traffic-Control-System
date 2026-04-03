@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Control System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #0066cc;
+            --primary-dark: #004d99;
+            --secondary-color: #00c853;
+            --accent-color: #ff6d00;
+            --text-dark: #1a1a2e;
+            --text-light: #ffffff;
+            --bg-light: #f8f9fa;
+            --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 8rem 5% 4rem;
+            color: white;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero-text h1 span {
+            color: var(--secondary-color);
+        }
+
+        .hero-text p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.8;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        .btn-success {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #00a844;
+            transform: translateY(-2px);
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .hero-visual {
+            position: relative;
+        }
+
+        .traffic-animation {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .signal-display {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .signal-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .signal-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .traffic-light {
+            width: 60px;
+            height: 120px;
+            background: #333;
+            border-radius: 10px;
+            margin: 0 auto 1rem;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .light {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #444;
+            transition: background 0.3s;
+        }
+
+        .light.red.active {
+            background: #ff4444;
+            box-shadow: 0 0 20px #ff4444;
+        }
+
+        .light.yellow.active {
+            background: #ffbb33;
+            box-shadow: 0 0 20px #ffbb33;
+        }
+
+        .light.green.active {
+            background: #00c851;
+            box-shadow: 0 0 20px #00c851;
+        }
+
+        .density-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .density-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .density-low {
+            background: var(--secondary-color);
+            width: 30%;
+        }
+
+        .density-medium {
+            background: var(--accent-color);
+            width: 60%;
+        }
+
+        .density-high {
+            background: #ff4444;
+            width: 85%;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 6rem 5%;
+            background: var(--bg-light);
+        }
+
+        .section-title {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 4rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.7;
+        }
+
+        /* About Section */
+        .about {
+            padding: 6rem 5%;
+            background: white;
+        }
+
+        .about-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .about-image {
+            background: var(--bg-gradient);
+            border-radius: 20px;
+            padding: 3rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-image::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        }
+
+        .iot-visual {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .iot-node {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 2rem;
+        }
+
+        .about-text h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+        }
+
+        .about-text p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .about-list {
+            list-style: none;
+        }
+
+        .about-list li {
+            padding: 0.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+            color: #555;
+        }
+
+        .about-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        /* Dashboard Section */
+        .dashboard {
+            padding: 6rem 5%;
+            background: var(--bg-gradient);
+            color: white;
+        }
+
+        .dashboard-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .dashboard-text h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .dashboard-text p {
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .dashboard-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .dashboard-feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .dashboard-feature-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--secondary-color);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .dashboard-preview {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dashboard-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .live-badge {
+            background: #ff4444;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .monitor-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .monitor-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .intersection-name {
+            font-weight: 500;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+        }
+
+        .traffic-flow {
+            display: flex;
+            justify-content: space-around;
+            margin: 1rem 0;
+        }
+
+        .flow-direction {
+            text-align: center;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .flow-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .emergency-override {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            background: rgba(255, 107, 107, 0.2);
+            border-radius: 5px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #ff6b6b;
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 6rem 5%;
+            background: white;
+            text-align: center;
+        }
+
+        .cta-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .cta p {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 4rem 5% 2rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand p {
+            opacity: 0.7;
+            margin-top: 1rem;
+            line-height: 1.8;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+
+            .hero-content,
+            .about-content,
+            .dashboard-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-visual {
+                order: -1;
+            }
+
+            .hero-stats {
+                justify-content: center;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .dashboard-features {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-text h1 {
+                font-size: 2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .signal-display {
+                grid-template-columns: 1fr;
+            }
+
+            .monitor-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="#" class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-road"></i>
+            </div>
+            Traffic Control System
+        </a>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#dashboard">Dashboard</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+        <div class="auth-buttons">
+            <a href="login.html" class="btn btn-outline">Sign In</a>
+            <a href="signup.html" class="btn btn-primary">Sign Up</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Intelligent Traffic Management for <span>Smarter Cities</span></h1>
+                <p>Transform urban mobility with our IoT-driven smart traffic management system. Real-time sensor data
+                    optimizes traffic signals, reduces congestion, and prioritizes emergency services for faster
+                    response times.</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn btn-success btn-large">Get Started</a>
+                    <a href="#dashboard" class="btn btn-outline btn-large"
+                        style="border-color: white; color: white;">View Demo</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">40%</div>
+                        <div class="stat-label">Reduced Congestion</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">30%</div>
+                        <div class="stat-label">Lower Emissions</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">50%</div>
+                        <div class="stat-label">Faster Response</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="traffic-animation">
+                    <div class="signal-display">
+                        <div class="signal-card">
+                            <div class="traffic-light">
+                                <div class="light red active"></div>
+                                <div class="light"></div>
+                                <div class="light"></div>
+                            </div>
+                            <p>STOP</p>
+                            <div class="density-bar">
+                                <div class="density-fill density-high"></div>
+                            </div>
+                        </div>
+                        <div class="signal-card">
+                            <div class="traffic-light">
+                                <div class="light"></div>
+                                <div class="light"></div>
+                                <div class="light yellow active"></div>
+                            </div>
+                            <p>STEADY</p>
+                            <div class="density-bar">
+                                <div class="density-fill density-low"></div>
+                            </div>
+                        </div>
+                        <div class="signal-card">
+                            <div class="traffic-light">
+                                <div class="light"></div>
+                                <div class="light green active"></div>
+                                <div class="light"></div>
+                            </div>
+                            <p>GO</p>
+                            <div class="density-bar">
+                                <div class="density-fill density-medium"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                        <i class="fas fa-satellite-dish" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                        <p style="margin: 0;">Real-time IoT Monitoring Active</p>
+                        <small style="opacity: 0.7;">12 sensors connected</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-title">
+            <h2>Advanced Features for Modern Traffic Management</h2>
+            <p>Our comprehensive system leverages cutting-edge IoT technology to create intelligent, responsive traffic
+                infrastructure.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card animate-on-scroll">
+                <div class="feature-icon">
+                    <i class="fas fa-stopwatch"></i>
+                </div>
+                <h3>Real-Time Signal Optimization</h3>
+                <p>Dynamic traffic signal timing based on live sensor data. The system continuously analyzes traffic
+                    density and adjusts signal cycles to maximize flow efficiency and minimize wait times.</p>
+            </div>
+            <div class="feature-card animate-on-scroll">
+                <div class="feature-icon">
+                    <i class="fas fa-ambulance"></i>
+                </div>
+                <h3>Emergency Vehicle Priority</h3>
+                <p>Automatic green wave creation for emergency services. When emergency vehicles approach, the system
+                    clears the path by adjusting signals along their route, significantly reducing response times.</p>
+            </div>
+            <div class="feature-card animate-on-scroll">
+                <div class="feature-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h3>Cloud-Based Monitoring</h3>
+                <p>Access your traffic management dashboard from anywhere. Our cloud infrastructure provides 24/7
+                    monitoring, data storage, and analytics capabilities with real-time updates and historical
+                    reporting.</p>
+            </div>
+            <div class="feature-card animate-on-scroll">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Data-Driven Insights</h3>
+                <p>Comprehensive analytics and reporting tools help identify traffic patterns, predict congestion, and
+                    make informed decisions for urban planning and infrastructure development.</p>
+            </div>
+            <div class="feature-card animate-on-scroll">
+                <div class="feature-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h3>Environmental Impact Reduction</h3>
+                <p>By optimizing traffic flow and reducing idle time, the system significantly lowers vehicle emissions,
+                    contributing to cleaner air and more sustainable urban environments.</p>
+            </div>
+            <div class="feature-card animate-on-scroll">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Enhanced Road Safety</h3>
+                <p>Smart intersection management, pedestrian crossing optimization, and real-time hazard alerts create
+                    safer road conditions for all users, reducing accidents and improving overall safety.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+        <div class="about-content">
+            <div class="about-image">
+                <h3 style="text-align: center; margin-bottom: 2rem; font-size: 1.5rem;">IoT Network Architecture</h3>
+                <div class="iot-visual">
+                    <div class="iot-node">
+                        <i class="fas fa-wifi"></i>
+                        <p style="font-size: 0.8rem; margin-top: 0.5rem;">Sensors</p>
+                    </div>
+                    <div class="iot-node">
+                        <i class="fas fa-network-wired"></i>
+                        <p style="font-size: 0.8rem; margin-top: 0.5rem;">Gateway</p>
+                    </div>
+                    <div class="iot-node">
+                        <i class="fas fa-server"></i>
+                        <p style="font-size: 0.8rem; margin-top: 0.5rem;">Cloud</p>
+                    </div>
+                </div>
+                <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <span><i class="fas fa-check-circle" style="color: var(--secondary-color);"></i> System
+                            Status</span>
+                        <span style="color: var(--secondary-color);">Operational</span>
+                    </div>
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <span><i class="fas fa-signal" style="color: var(--secondary-color);"></i> Active
+                            Connections</span>
+                        <span>1,247 Devices</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fas fa-bolt" style="color: var(--accent-color);"></i> Data Processing</span>
+                        <span>99.9% Uptime</span>
+                    </div>
+                </div>
+            </div>
+            <div class="about-text">
+                <h2>Building Smarter Cities with IoT-Driven Automation</h2>
+                <p>Our Smart Traffic Management System represents a paradigm shift in urban mobility. By leveraging the
+                    power of Internet of Things (IoT) technology, we create intelligent transportation networks that
+                    adapt in real-time to changing conditions.</p>
+                <p>The system integrates seamlessly with existing infrastructure, transforming traditional intersections
+                    into smart nodes that communicate, analyze, and optimize traffic flow autonomously.</p>
+                <ul class="about-list">
+                    <li>Real-time traffic density monitoring across all intersections</li>
+                    <li>Intelligent signal timing optimization algorithms</li>
+                    <li>Emergency vehicle override capabilities</li>
+                    <li>Cloud-based dashboard for remote management</li>
+                    <li>Comprehensive data analytics and reporting</li>
+                    <li>Seamless integration with existing infrastructure</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section class="dashboard" id="dashboard">
+        <div class="dashboard-content">
+            <div class="dashboard-text">
+                <h2>Cloud-Based Traffic Monitoring Dashboard</h2>
+                <p>Take control of your urban traffic infrastructure with our comprehensive web-based dashboard. Monitor
+                    every intersection in real-time, analyze traffic patterns, and respond instantly to changing
+                    conditions.</p>
+                <div class="dashboard-features">
+                    <div class="dashboard-feature">
+                        <div class="dashboard-feature-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 0.3rem;">Real-Time Monitoring</h4>
+                            <small style="opacity: 0.8;">Live traffic density updates</small>
+                        </div>
+                    </div>
+                    <div class="dashboard-feature">
+                        <div class="dashboard-feature-icon">
+                            <i class="fas fa-sliders-h"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 0.3rem;">Signal Control</h4>
+                            <small style="opacity: 0.8;">Manual override capabilities</small>
+                        </div>
+                    </div>
+                    <div class="dashboard-feature">
+                        <div class="dashboard-feature-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 0.3rem;">Emergency Override</h4>
+                            <small style="opacity: 0.8;">Priority routing for emergencies</small>
+                        </div>
+                    </div>
+                    <div class="dashboard-feature">
+                        <div class="dashboard-feature-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 0.3rem;">Analytics & Reports</h4>
+                            <small style="opacity: 0.8;">Comprehensive data insights</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard-preview">
+                <div class="dashboard-header">
+                    <div class="dashboard-title">
+                        <i class="fas fa-th-large"></i> Traffic Control Center
+                    </div>
+                    <div class="live-badge">
+                        <i class="fas fa-circle" style="font-size: 0.6rem; margin-right: 0.3rem;"></i>
+                        LIVE
+                    </div>
+                </div>
+                <div class="monitor-grid">
+                    <div class="monitor-card">
+                        <div class="monitor-card-header">
+                            <span class="intersection-name">Main & Oak</span>
+                            <div class="status-indicator"></div>
+                        </div>
+                        <div class="traffic-flow">
+                            <div class="flow-direction">
+                                <div class="flow-value">234</div>
+                                <small>vehicles/hr</small>
+                            </div>
+                            <div class="flow-direction">
+                                <div class="flow-value" style="color: var(--secondary-color);">45s</div>
+                                <small>green time</small>
+                            </div>
+                        </div>
+                        <div class="emergency-override">
+                            <i class="fas fa-ambulance"></i> Emergency Priority Active
+                        </div>
+                    </div>
+                    <div class="monitor-card">
+                        <div class="monitor-card-header">
+                            <span class="intersection-name">Broadway & 5th</span>
+                            <div class="status-indicator"></div>
+                        </div>
+                        <div class="traffic-flow">
+                            <div class="flow-direction">
+                                <div class="flow-value">567</div>
+                                <small>vehicles/hr</small>
+                            </div>
+                            <div class="flow-direction">
+                                <div class="flow-value" style="color: var(--accent-color);">60s</div>
+                                <small>green time</small>
+                            </div>
+                        </div>
+                        <div
+                            style="margin-top: 1rem; padding: 0.5rem; background: rgba(0,200,83,0.2); border-radius: 5px; text-align: center; font-size: 0.8rem; color: var(--secondary-color);">
+                            <i class="fas fa-check-circle"></i> Optimal Flow
+                        </div>
+                    </div>
+                    <div class="monitor-card">
+                        <div class="monitor-card-header">
+                            <span class="intersection-name">Park Ave & Elm</span>
+                            <div class="status-indicator"></div>
+                        </div>
+                        <div class="traffic-flow">
+                            <div class="flow-direction">
+                                <div class="flow-value">189</div>
+                                <small>vehicles/hr</small>
+                            </div>
+                            <div class="flow-direction">
+                                <div class="flow-value" style="color: var(--secondary-color);">30s</div>
+                                <small>green time</small>
+                            </div>
+                        </div>
+                        <div
+                            style="margin-top: 1rem; padding: 0.5rem; background: rgba(0,200,83,0.2); border-radius: 5px; text-align: center; font-size: 0.8rem; color: var(--secondary-color);">
+                            <i class="fas fa-check-circle"></i> Low Traffic
+                        </div>
+                    </div>
+                    <div class="monitor-card">
+                        <div class="monitor-card-header">
+                            <span class="intersection-name">Central & Market</span>
+                            <div class="status-indicator"></div>
+                        </div>
+                        <div class="traffic-flow">
+                            <div class="flow-direction">
+                                <div class="flow-value">892</div>
+                                <small>vehicles/hr</small>
+                            </div>
+                            <div class="flow-direction">
+                                <div class="flow-value" style="color: #ff4444;">90s</div>
+                                <small>green time</small>
+                            </div>
+                        </div>
+                        <div class="emergency-override">
+                            <i class="fas fa-exclamation-circle"></i> High Density Alert
+                        </div>
+                    </div>
+                </div>
+                <div
+                    style="margin-top: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <small style="opacity: 0.7;">System Performance</small>
+                        <div
+                            style="margin-top: 0.5rem; width: 200px; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px;">
+                            <div
+                                style="width: 98%; height: 100%; background: var(--secondary-color); border-radius: 3px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <small style="opacity: 0.7;">Last Updated</small>
+                        <div style="font-weight: 600;">2 seconds ago</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta" id="contact">
+        <div class="cta-content">
+            <h2>Ready to Transform Your City's Traffic Management?</h2>
+            <p>Join the growing number of smart cities leveraging IoT technology to create safer, more efficient urban
+                transportation networks. Get started with SmartFlow today.</p>
+            <div class="cta-buttons">
+                <a href="#" class="btn btn-primary btn-large">Start Free Trial</a>
+                <a href="#" class="btn btn-outline btn-large">Schedule Demo</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <a href="#" class="logo" style="color: white;">
+                    <div class="logo-icon">
+                        <i class="fas fa-road"></i>
+                    </div>
+                    SmartFlow
+                </a>
+                <p>Empowering smarter cities through intelligent traffic management systems. Our IoT-driven solutions
+                    optimize urban mobility, reduce congestion, and enhance emergency response times.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Solutions</h4>
+                <ul>
+                    <li><a href="#">Traffic Monitoring</a></li>
+                    <li><a href="#">Signal Optimization</a></li>
+                    <li><a href="#">Emergency Response</a></li>
+                    <li><a href="#">Analytics Platform</a></li>
+                    <li><a href="#">IoT Integration</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Info</h4>
+                <ul>
+                    <li><a href="#"><i class="fas fa-map-marker-alt" style="margin-right: 0.5rem;"></i> 123 Tech Park,
+                            City Center</a></li>
+                    <li><a href="#"><i class="fas fa-phone" style="margin-right: 0.5rem;"></i> +1 (555) 123-4567</a>
+                    </li>
+                    <li><a href="#"><i class="fas fa-envelope" style="margin-right: 0.5rem;"></i> info@smartflow.com</a>
+                    </li>
+                    <li><a href="#"><i class="fas fa-clock" style="margin-right: 0.5rem;"></i> 24/7 Support
+                            Available</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 SmartFlow Traffic Management System. All rights reserved. | Designed by Suryaprakash</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Navbar background change on scroll
+        window.addEventListener('scroll', function () {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(255, 255, 255, 0.98)';
+                navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.15)';
+            } else {
+                navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+                navbar.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+            }
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Traffic light simulation
+        function simulateTrafficLights() {
+            const lights = document.querySelectorAll('.light');
+            const directions = ['red', 'yellow', 'green'];
+
+            setInterval(() => {
+                lights.forEach(light => {
+                    light.classList.remove('active');
+                    const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+                    if (light.classList.contains(randomDirection)) {
+                        light.classList.add('active');
+                    }
+                });
+            }, 3000);
+        }
+
+        // Density bar animation
+        function animateDensityBars() {
+            const densityBars = document.querySelectorAll('.density-fill');
+
+            setInterval(() => {
+                densityBars.forEach(bar => {
+                    const currentWidth = parseInt(bar.style.width) || 30;
+                    const newWidth = Math.max(20, Math.min(90, currentWidth + (Math.random() - 0.5) * 20));
+                    bar.style.width = newWidth + '%';
+
+                    bar.classList.remove('density-low', 'density-medium', 'density-high');
+                    if (newWidth < 40) {
+                        bar.classList.add('density-low');
+                    } else if (newWidth < 70) {
+                        bar.classList.add('density-medium');
+                    } else {
+                        bar.classList.add('density-high');
+                    }
+                });
+            }, 2000);
+        }
+
+        // Dashboard live update simulation
+        function updateDashboard() {
+            const flowValues = document.querySelectorAll('.flow-value');
+
+            setInterval(() => {
+                flowValues.forEach((value, index) => {
+                    if (index % 2 === 0) { // Only update vehicle counts
+                        const currentValue = parseInt(value.textContent) || 100;
+                        const newValue = Math.max(50, Math.min(1000, currentValue + Math.floor((Math.random() - 0.5) * 50)));
+                        value.textContent = newValue;
+                    }
+                });
+            }, 3000);
+        }
+
+        // Initialize animations when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            simulateTrafficLights();
+            animateDensityBars();
+            updateDashboard();
+
+            // Add initial visible class to hero elements
+            document.querySelector('.hero-text').classList.add('visible');
+            document.querySelector('.hero-visual').classList.add('visible');
+        });
+
+        // Counter animation for stats
+        function animateCounter(element, target, duration = 2000) {
+            let start = 0;
+            const increment = target / (duration / 16);
+
+            const timer = setInterval(() => {
+                start += increment;
+                if (start >= target) {
+                    element.textContent = target + '%';
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(start) + '%';
+                }
+            }, 16);
+        }
+
+        // Trigger counter animation when stats section is visible
+        const statsSection = document.querySelector('.hero-stats');
+        let statsAnimated = false;
+
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !statsAnimated) {
+                    statsAnimated = true;
+                    const statNumbers = document.querySelectorAll('.stat-number');
+                    const targets = [40, 30, 50];
+
+                    statNumbers.forEach((num, index) => {
+                        setTimeout(() => {
+                            animateCounter(num, targets[index]);
+                        }, index * 200);
+                    });
+                }
+            });
+        }, { threshold: 0.5 });
+
+        if (statsSection) {
+            statsObserver.observe(statsSection);
+        }
+
+        // Mobile menu toggle (for responsive design)
+        function createMobileMenu() {
+            const navbar = document.querySelector('.navbar');
+            const navLinks = document.querySelector('.nav-links');
+
+            // Create mobile menu button
+            const mobileBtn = document.createElement('button');
+            mobileBtn.className = 'mobile-menu-btn';
+            mobileBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            mobileBtn.style.cssText = `
+                display: none;
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: var(--text-dark);
+            `;
+
+            navbar.querySelector('.auth-buttons').before(mobileBtn);
+
+            // Mobile menu styles
+            const style = document.createElement('style');
+            style.textContent = `
+                @media (max-width: 768px) {
+                    .mobile-menu-btn {
+                        display: block !important;
+                    }
+                    
+                    .nav-links {
+                        position: absolute;
+                        top: 100%;
+                        left: 0;
+                        width: 100%;
+                        background: white;
+                        flex-direction: column;
+                        padding: 1rem;
+                        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+                        display: none;
+                    }
+                    
+                    .nav-links.active {
+                        display: flex;
+                    }
+                    
+                    .auth-buttons {
+                        position: absolute;
+                        top: calc(100% + 200px);
+                        left: 0;
+                        width: 100%;
+                        padding: 1rem;
+                        background: white;
+                        justify-content: center;
+                        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+                        display: none;
+                    }
+                    
+                    .auth-buttons.active {
+                        display: flex;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Toggle menu
+            mobileBtn.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                document.querySelector('.auth-buttons').classList.toggle('active');
+                mobileBtn.innerHTML = navLinks.classList.contains('active')
+                    ? '<i class="fas fa-times"></i>'
+                    : '<i class="fas fa-bars"></i>';
+            });
+        }
+
+        createMobileMenu();
+    </script>
+</body>
+
+</html>

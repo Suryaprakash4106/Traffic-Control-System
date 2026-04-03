@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Control System Login</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* Background Image */
+            background: url('traffic.jpg') no-repeat center center/cover;
+            position: relative;
+        }
+
+        /* Overlay to darken background for readability */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 20, 40, 0.75), rgba(0, 10, 20, 0.6));
+            z-index: -1;
+        }
+
+        .login-container {
+            width: 400px;
+            padding: 40px;
+            border-radius: 20px;
+            /* Glassmorphism Effect */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            color: #fff;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .login-header p {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            outline: none;
+            color: #fff;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        /* Placeholder styling */
+        ::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        input:focus,
+        select:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #00d2ff;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+        }
+
+        /* Custom Select Arrow */
+        select {
+            appearance: none;
+            cursor: pointer;
+        }
+
+        /* Role Description Box */
+        .role-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            border-left: 3px solid #00d2ff;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        /* CAPTCHA Styles */
+        .captcha-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 15px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .captcha-question {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #00d2ff;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+            min-width: 80px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .captcha-input {
+            flex: 1;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            color: #fff;
+            outline: none;
+        }
+
+        .captcha-input:focus {
+            border-color: #00d2ff;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(45deg, #005c97, #363795);
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Dropdown changes */
+        .input-group option {
+            color: #000;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(45deg, #006bb3, #4649a8);
+        }
+
+        .extra-links {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .extra-links a {
+            color: #00d2ff;
+            text-decoration: none;
+            transition: 0.3s;
+            width: fit-content;
+            cursor: pointer;
+        }
+
+        .extra-links a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        /* Icon rotation on focus */
+        input:focus+i,
+        select:focus+i {
+            color: #00d2ff;
+        }
+
+        /* Forgot Password Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            color: #fff;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .modal-header p {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #fff;
+            background: none;
+            border: none;
+        }
+
+        .reset-step {
+            display: none;
+        }
+
+        .reset-step.active {
+            display: block;
+        }
+
+        .btn-reset {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(45deg, #00c853, #009624);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-reset:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .timer {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #ffaa00;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .back-link a {
+            color: #00d2ff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+        <div class="login-header">
+            <h2>Traffic System</h2>
+            <p>Secure Access Portal</p>
+        </div>
+
+        <form onsubmit="return handleLogin(event)">
+
+            <!-- Role Selection -->
+            <div class="input-group">
+                <select id="roleSelect" onchange="updateRoleInfo()">
+                    <option value="admin">Admin</option>
+                    <option value="police">Traffic Police</option>
+                    <option value="operator">Operator</option>
+                    <option value="operator">Police</option>
+                </select>
+                <i class="fas fa-user-shield"></i>
+            </div>
+
+            <!-- Dynamic Role Description -->
+            <div class="role-info" id="roleInfo">
+                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                <span id="roleText">Admin → Full system access</span>
+            </div>
+
+            <!-- Email -->
+            <div class="input-group">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <i class="fas fa-envelope"></i>
+            </div>
+
+            <!-- Password -->
+            <div class="input-group">
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <i class="fas fa-lock"></i>
+            </div>
+
+            <!-- CAPTCHA Verification -->
+            <div class="captcha-container">
+                <span class="captcha-question" id="captchaQuestion">A1B2C3</span>
+                <input type="text" id="captchaInput" class="captcha-input" placeholder="Enter code" maxlength="6" required>
+                <i class="fas fa-sync-alt" style="cursor: pointer; color: #00d2ff;" onclick="generateCaptcha()"></i>
+            </div>
+
+            <!-- Login Button -->
+            <button type="submit" class="btn-login">LOGIN</button>
+
+            <!-- Forgot Password & Sign Up -->
+            <div class="extra-links">
+                <a href="#" onclick="openForgotModal(event)">Forgot Password?</a>
+                <a href="signup.html">Sign Up</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal" id="forgotModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeForgotModal()">&times;</span>
+            
+            <!-- Step 1: Email Input -->
+            <div class="reset-step active" id="step1">
+                <div class="modal-header">
+                    <h3>Reset Password</h3>
+                    <p>Enter your email to receive OTP</p>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="resetEmail" placeholder="Your Email" required>
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <button class="btn-reset" id="sendOtpBtn" onclick="sendResetOTP()">Send OTP</button>
+            </div>
+
+            <!-- Step 2: OTP Verification -->
+            <div class="reset-step" id="step2">
+                <div class="modal-header">
+                    <h3>Verify OTP</h3>
+                    <p>Enter the 6-digit code sent to your email</p>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="otpInput" placeholder="Enter OTP" maxlength="6" required>
+                    <i class="fas fa-key"></i>
+                </div>
+                <div class="timer" id="timer">05:00</div>
+                <button class="btn-reset" id="verifyOtpBtn" onclick="verifyResetOTP()">Verify OTP</button>
+                <div class="back-link">
+                    <a href="#" onclick="resendResetOTP(event)">Resend OTP</a>
+                </div>
+            </div>
+
+            <!-- Step 3: New Password -->
+            <div class="reset-step" id="step3">
+                <div class="modal-header">
+                    <h3>New Password</h3>
+                    <p>Enter your new password</p>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="newPassword" placeholder="New Password" required>
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+                    <i class="fas fa-lock"></i>
+                </div>
+                <button class="btn-reset" id="resetPasswordBtn" onclick="resetPassword()">Reset Password</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== ROLE DESCRIPTION ====================
+        const roleData = {
+            admin: "Admin → Full system access",
+            police: "Traffic Police → Emergency vehicle & traffic monitoring",
+            operator: "Operator → Records & density monitoring"
+        };
+
+        const roleSelect = document.getElementById('roleSelect');
+        const roleText = document.getElementById('roleText');
+        const roleInfo = document.getElementById('roleInfo');
+
+        function updateRoleInfo() {
+            const selectedRole = roleSelect.value;
+            roleText.innerText = roleData[selectedRole];
+
+            if (selectedRole === 'admin') {
+                roleInfo.style.borderLeftColor = "#ff4757";
+            } else if (selectedRole === 'police') {
+                roleInfo.style.borderLeftColor = "#ffa502";
+            } else {
+                roleInfo.style.borderLeftColor = "#2ed573";
+            }
+        }
+
+        // ==================== ALPHANUMERIC CAPTCHA ====================
+        let currentCaptchaCode = '';
+
+        function generateCaptcha() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars[Math.floor(Math.random() * chars.length)];
+            }
+            currentCaptchaCode = code;
+            document.getElementById('captchaQuestion').textContent = code;
+            document.getElementById('captchaInput').value = '';
+        }
+
+        function validateCaptcha() {
+            const userAnswer = document.getElementById('captchaInput').value;
+            return userAnswer === currentCaptchaCode;
+        }
+
+        // ==================== LOGIN FUNCTION ====================
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            // Validate CAPTCHA
+            if (!validateCaptcha()) {
+                alert(' Incorrect CAPTCHA code. Please try again.');
+                generateCaptcha();
+                return;
+            }
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const role = roleSelect.value;
+
+            if (!email || !password) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            const btn = document.querySelector('.btn-login');
+            const originalText = btn.innerText;
+            btn.innerText = "Authenticating...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:3000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, role })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store user data
+                    localStorage.setItem('user', JSON.stringify({
+                        email: email,
+                        role: data.user?.role || role,
+                        name: data.user?.name || email.split('@')[0],
+                        isLoggedIn: true
+                    }));
+
+                    alert(' Login successful!');
+                    
+                    // Redirect based on role
+                    if (data.user?.role === 'admin' || role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                } else {
+                    alert(' Error: ' + (data.error || 'Login failed'));
+                    generateCaptcha();
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert(' Connection error: Cannot reach backend. Make sure server is running on http://localhost:3000');
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // ==================== FORGOT PASSWORD MODAL ====================
+        let resetEmail = '';
+        let resetTimer;
+        let timeLeft = 300;
+
+        function openForgotModal(event) {
+            event.preventDefault();
+            document.getElementById('forgotModal').classList.add('active');
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step3').classList.remove('active');
+            document.getElementById('resetEmail').value = '';
+        }
+
+        function closeForgotModal() {
+            document.getElementById('forgotModal').classList.remove('active');
+            clearInterval(resetTimer);
+        }
+
+        async function sendResetOTP() {
+            resetEmail = document.getElementById('resetEmail').value.trim();
+
+            if (!resetEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resetEmail)) {
+                alert('Please enter a valid email');
+                return;
+            }
+
+            const btn = document.getElementById('sendOtpBtn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            try {
+                const response = await fetch('http://localhost:3000/send-email-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: resetEmail })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(' OTP sent to your email!');
+                    
+                    // Move to step 2
+                    document.getElementById('step1').classList.remove('active');
+                    document.getElementById('step2').classList.add('active');
+                    
+                    // Start timer
+                    timeLeft = 300;
+                    startResetTimer();
+                } else {
+                    alert(' Error: ' + (data.error || 'Failed to send OTP'));
+                }
+            } catch (error) {
+                alert(' Connection error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Send OTP';
+            }
+        }
+
+        function startResetTimer() {
+            const timerDisplay = document.getElementById('timer');
+            clearInterval(resetTimer);
+            
+            resetTimer = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(resetTimer);
+                    timerDisplay.textContent = 'Expired';
+                    document.getElementById('verifyOtpBtn').disabled = true;
+                }
+            }, 1000);
+        }
+
+        async function verifyResetOTP() {
+            const otp = document.getElementById('otpInput').value.trim();
+
+            if (!otp || otp.length !== 6) {
+                alert('Please enter 6-digit OTP');
+                return;
+            }
+
+            const btn = document.getElementById('verifyOtpBtn');
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+
+            try {
+                const response = await fetch('http://localhost:3000/verify-email-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: resetEmail, otp: otp })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(' OTP verified!');
+                    document.getElementById('step2').classList.remove('active');
+                    document.getElementById('step3').classList.add('active');
+                    clearInterval(resetTimer);
+                } else {
+                    alert(' Error: ' + (data.error || 'Invalid OTP'));
+                }
+            } catch (error) {
+                alert(' Connection error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Verify OTP';
+            }
+        }
+
+        function resendResetOTP(event) {
+            event.preventDefault();
+            sendResetOTP();
+        }
+
+        async function resetPassword() {
+            const newPass = document.getElementById('newPassword').value.trim();
+            const confirmPass = document.getElementById('confirmPassword').value.trim();
+
+            if (!newPass || newPass.length < 6) {
+                alert('Password must be at least 6 characters');
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                alert('Passwords do not match');
+                return;
+            }
+
+            const btn = document.getElementById('resetPasswordBtn');
+            btn.disabled = true;
+            btn.textContent = 'Resetting...';
+
+            try {
+                const response = await fetch('http://localhost:3000/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: resetEmail, newPassword: newPass })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(' Password reset successful! Please login.');
+                    closeForgotModal();
+                } else {
+                    alert(' Error: ' + (data.error || 'Password reset failed'));
+                }
+            } catch (error) {
+                alert(' Connection error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Reset Password';
+            }
+        }
+
+        // ==================== INITIALIZE ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            updateRoleInfo();
+            generateCaptcha();
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('forgotModal');
+            if (event.target === modal) {
+                closeForgotModal();
+            }
+        });
+    </script>
+
+</body>
+
+</html>

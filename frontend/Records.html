@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Records - Traffic System</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- PDF & Excel Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Leaflet for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 270px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100%;
+            z-index: 100;
+        }
+
+        .logo-container {
+            padding: 25px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-container i {
+            font-size: 26px;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.15);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .nav-links {
+            list-style: none;
+            margin-top: 25px;
+            flex-grow: 1;
+            padding: 0 15px;
+        }
+
+        .nav-links li {
+            margin-bottom: 8px;
+        }
+
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .nav-links li a i {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-links li a:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .nav-links li a.active {
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.2) 0%, transparent 100%);
+            color: #38bdf8;
+        }
+
+        .nav-links li a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 24px;
+            background: #38bdf8;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .logout-container {
+            padding: 20px;
+            margin: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logout {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            color: #f87171;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .logout:hover {
+            background-color: rgba(248, 113, 113, 0.1);
+            color: #fff;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 0;
+            width: calc(100% - 260px);
+            min-height: 100vh;
+            background: #f8fafc;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-left h1 {
+            color: #1e293b;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-left p {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 8px 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .user-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .user-info p {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .dashboard-content {
+            padding: 30px 40px;
+        }
+
+        .filters-section {
+            background: #fff;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 24px;
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filters-header h2 {
+            color: #1e293b;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .filters-container {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .filter-select,
+        .filter-input {
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #1e293b;
+            background: #f8fafc;
+            min-width: 160px;
+        }
+
+        .filter-select:focus,
+        .filter-input:focus {
+            outline: none;
+            border-color: #38bdf8;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #38bdf8;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #0ea5e9;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .data-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .tab-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .tab-btn.active {
+            background: #38bdf8;
+            color: #fff;
+        }
+
+        .records-section {
+            background: #fff;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+        }
+
+        .records-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .records-header h2 {
+            color: #1e293b;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            position: relative;
+        }
+
+        .btn-export {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #64748b;
+        }
+
+        .btn-export:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        /* Dropdown Styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: #fff;
+            min-width: 160px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            z-index: 1000;
+            margin-top: 5px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        .dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            color: #38bdf8;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 8px 0;
+        }
+
+        /* Chart Dropdown Styles */
+        .chart-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            color: #1e293b;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-map {
+            height: 300px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .modal-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .detail-item {
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        /* Logout Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .logout-modal-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+        }
+
+        .logout-modal-icon {
+            font-size: 48px;
+            color: #f87171;
+            margin-bottom: 20px;
+        }
+
+        .logout-modal-card h3 {
+            color: #1e293b;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .logout-modal-card p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .logout-modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .logout-modal-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-modal-btn.logout {
+            background: #f87171;
+            color: #fff;
+        }
+
+        .logout-modal-btn.logout:hover {
+            background: #ef4444;
+            transform: translateY(-2px);
+        }
+
+        .logout-modal-btn.cancel {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .logout-modal-btn.cancel:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th {
+            text-align: left;
+            padding: 14px;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        table td {
+            padding: 14px;
+            color: #334155;
+            font-size: 14px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        table tr:hover td {
+            background: #f8fafc;
+        }
+
+        .record-id {
+            font-weight: 600;
+            color: #38bdf8;
+        }
+
+        .type-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .type-badge.car {
+            background: rgba(56, 189, 248, 0.1);
+            color: #38bdf8;
+        }
+
+        .type-badge.truck {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .type-badge.bus {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .type-badge.ambulance {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .type-badge.police {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.normal {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .status-badge.slow {
+            background: rgba(251, 191, 36, 0.1);
+            color: #fb923c;
+        }
+
+        .status-badge.priority {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .action-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .pagination-info {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .page-btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #64748b;
+        }
+
+        .page-btn:hover {
+            background: #f1f5f9;
+        }
+
+        .page-btn.active {
+            background: #38bdf8;
+            color: #fff;
+            border-color: #38bdf8;
+        }
+
+        @media (max-width: 1200px) {
+            .filters-container {
+                flex-direction: column;
+            }
+
+            .filter-buttons {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <i class="fa-solid fa-road"></i>
+            <span>Traffic System</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="dashboard.html" class="menu-item"><i class="fa-solid fa-house"></i><span>Home</span></a></li>
+            <li><a href="Trafficdensity.html" class="menu-item"><i class="fa-solid fa-chart-line"></i><span>Traffic
+                        Density</span></a></li>
+            <li><a href="Emergencyvehicle.html" class="menu-item"><i class="fa-solid fa-ambulance"></i><span>Emergency
+                        Vehicle</span></a></li>
+            <li><a href="Records.html" class="menu-item active"><i
+                        class="fa-solid fa-database"></i><span>Records</span></a></li>
+            <li><a href="admin.html" class="menu-item" onclick="setActive(this)"><i
+                        class="fa-solid fa-user-gear"></i><span>Admin Panel</span></a></li>
+        </ul>
+        <div class="logout-container">
+            <a href="#" class="logout" onclick="openLogoutModal(event)"><i
+                    class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-left">
+                <h1>Records</h1>
+                <p>Traffic logs, history & reports</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">AD</div>
+                <div class="user-info">
+                    <h4 id="userName">Admin User</h4>
+                    <p id="userRole">Administrator</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="filters-header">
+                    <h2><i class="fa-solid fa-filter"></i> Filters</h2>
+                </div>
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label>Date From</label>
+                        <input type="date" class="filter-input" id="dateFrom">
+                    </div>
+                    <div class="filter-group">
+                        <label>Date To</label>
+                        <input type="date" class="filter-input" id="dateTo">
+                    </div>
+                    <div class="filter-group">
+                        <label>Area</label>
+                        <select class="filter-select" id="areaFilter">
+                            <option value="">All Areas</option>
+                            <option value="R.S. Puram">R.S. Puram</option>
+                            <option value="Sulur">Sulur</option>
+                            <option value="Townhall">Townhall</option>
+                            <option value="Coimbatore Junction">Coimbatore Junction</option>
+                            <option value="Gandhipuram">Gandhipuram</option>
+                            <option value="Mettupalayam Road">Mettupalayam Road</option>
+                            <option value="Peelamedu">Peelamedu</option>
+                            <option value="Singanallur">Singanallur</option>
+                            <option value="Saibaba Colony">Saibaba Colony</option>
+                            <option value="Race Course">Race Course</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Vehicle Type</label>
+                        <select class="filter-select" id="vehicleFilter">
+                            <option value="">All Types</option>
+                            <option value="Car">Car</option>
+                            <option value="Truck">Truck</option>
+                            <option value="Bus">Bus</option>
+                            <option value="Ambulance">Ambulance</option>
+                            <option value="Police">Police</option>
+                        </select>
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="btn btn-primary" onclick="applyFilters()"><i class="fa-solid fa-search"></i>
+                            Apply</button>
+                        <button class="btn btn-outline" onclick="resetFilters()"><i class="fa-solid fa-rotate-left"></i>
+                            Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Tabs -->
+            <div class="data-tabs">
+                <button class="tab-btn active" onclick="switchTab('traffic')"><i class="fa-solid fa-car"></i> Traffic
+                    Logs</button>
+                <button class="tab-btn" onclick="switchTab('emergency')"><i class="fa-solid fa-ambulance"></i> Emergency
+                    History</button>
+                <button class="tab-btn" onclick="switchTab('reports')"><i class="fa-solid fa-file-lines"></i> Daily
+                    Reports</button>
+            </div>
+
+            <!-- Records Table -->
+            <div class="records-section">
+                <div class="records-header">
+                    <h2>Traffic Records</h2>
+                    <div class="export-buttons">
+                        <!-- Chart Dropdown Button -->
+                        <div class="chart-dropdown">
+                            <button class="btn-export" onclick="toggleChartDropdown()">
+                                <i class="fa-solid fa-chart-pie"></i> Chart
+                            </button>
+                            <div class="dropdown-menu" id="chartDropdown">
+                                <div class="dropdown-item" onclick="exportChart('bar', event)">
+                                    <i class="fa-solid fa-chart-bar"></i> Bar Chart
+                                </div>
+                                <div class="dropdown-item" onclick="exportChart('pie', event)">
+                                    <i class="fa-solid fa-chart-pie"></i> Pie Chart
+                                </div>
+                                <div class="dropdown-item" onclick="exportChart('line', event)">
+                                    <i class="fa-solid fa-chart-line"></i> Line Chart
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PDF Button -->
+                        <button class="btn-export" onclick="exportPDF(event)">
+                            <i class="fa-solid fa-file-pdf"></i> PDF
+                        </button>
+
+                        <!-- Excel Button -->
+                        <button class="btn-export" onclick="exportExcel(event)">
+                            <i class="fa-solid fa-file-excel"></i> Excel
+                        </button>
+                    </div>
+                </div>
+
+                <table id="recordsTable">
+                    <thead>
+                        <tr>
+                            <th>Record ID</th>
+                            <th>Date & Time</th>
+                            <th>Vehicle Type</th>
+                            <th>Area</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsTableBody">
+                        <!-- Real data will be loaded here -->
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    <div class="pagination-info" id="paginationInfo">Loading records...</div>
+                    <div class="pagination-buttons" id="paginationButtons">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Map Modal -->
+    <div class="modal" id="locationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Vehicle Location</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-map" id="modalMap"></div>
+                <div class="modal-details" id="modalDetails">
+                    <!-- Details will be filled by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Modal - NEW -->
+    <div class="modal-overlay" id="logoutModal">
+        <div class="logout-modal-card">
+            <div class="logout-modal-icon">
+                <i class="fa-solid fa-circle-question"></i>
+            </div>
+            <h3>Logout Confirmation</h3>
+            <p>Are you sure you want to logout?</p>
+            <div class="logout-modal-buttons">
+                <button class="logout-modal-btn cancel" onclick="closeLogoutModal()">Cancel</button>
+                <button class="logout-modal-btn logout" onclick="confirmLogout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // ==================== LOGOUT MODAL FUNCTIONS ====================
+        function openLogoutModal(event) {
+            event.preventDefault();
+            document.getElementById('logoutModal').classList.add('show');
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').classList.remove('show');
+        }
+
+        function confirmLogout() {
+            // Clear user data
+            localStorage.removeItem('user');
+            sessionStorage.clear();
+            
+            // Redirect to index page
+            window.location.href = 'index.html';
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('logoutModal');
+            if (event.target === modal) {
+                closeLogoutModal();
+            }
+        });
+
+        // ==================== GLOBAL VARIABLES ====================
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentTab = 'traffic';
+        let chartData = null;
+        let map = null;
+        let currentMarker = null;
+
+        // ==================== USER PROFILE ====================
+        function updateUserProfile() {
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (userData.name) {
+                document.getElementById('userName').textContent = userData.name;
+                const nameParts = userData.name.split(' ');
+                let initials = '';
+                if (nameParts.length >= 2) {
+                    initials = nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0);
+                } else {
+                    initials = userData.name.substring(0, 2);
+                }
+                document.getElementById('userAvatar').textContent = initials.toUpperCase();
+            }
+            
+            if (userData.role) {
+                document.getElementById('userRole').textContent = 
+                    userData.role === 'admin' ? 'Administrator' : userData.role;
+            }
+        }
+
+        // ==================== CHART DROPDOWN ====================
+        function toggleChartDropdown() {
+            const dropdown = document.getElementById('chartDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(event) {
+            const chartDropdown = document.getElementById('chartDropdown');
+            const chartBtn = event.target.closest('.chart-dropdown');
+            
+            if (!chartBtn && chartDropdown && chartDropdown.classList.contains('show')) {
+                chartDropdown.classList.remove('show');
+            }
+        });
+
+        // ==================== FETCH RECORDS FROM BACKEND ====================
+        async function fetchRecords() {
+            try {
+                const from = document.getElementById('dateFrom').value;
+                const to = document.getElementById('dateTo').value;
+                const area = document.getElementById('areaFilter').value;
+                const type = document.getElementById('vehicleFilter').value;
+                
+                let url = `http://localhost:3000/api/traffic-records?page=${currentPage}`;
+                if (from) url += `&from=${from}`;
+                if (to) url += `&to=${to}`;
+                if (area) url += `&area=${area}`;
+                if (type) url += `&type=${type}`;
+                
+                // Add tab filter
+                if (currentTab === 'emergency') {
+                    url += `&emergency=true`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    chartData = data.records; // Store for chart export
+                    displayRecords(data.records);
+                    updatePagination(data.total, data.page, data.totalPages);
+                } else {
+                    console.error('Error:', data.error);
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+            }
+        }
+
+        // ==================== DISPLAY RECORDS ====================
+        function displayRecords(records) {
+            const tbody = document.getElementById('recordsTableBody');
+            
+            if (!records || records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">No records found</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            
+            records.forEach(record => {
+                // Format date
+                const date = new Date(record.dateTime).toLocaleString('en-IN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // Determine badge classes
+                let typeClass = 'car';
+                if (record.vehicleType === 'Truck') typeClass = 'truck';
+                else if (record.vehicleType === 'Bus') typeClass = 'bus';
+                else if (record.vehicleType === 'Ambulance') typeClass = 'ambulance';
+                else if (record.vehicleType === 'Police') typeClass = 'police';
+                
+                let statusClass = 'normal';
+                if (record.status === 'Priority') statusClass = 'priority';
+                else if (record.status === 'Slow') statusClass = 'slow';
+                
+                html += `
+                    <tr>
+                        <td><span class="record-id">${record.recordId}</span></td>
+                        <td>${date}</td>
+                        <td><span class="type-badge ${typeClass}">${record.vehicleType}</span></td>
+                        <td>${record.area}</td>
+                        <td><span class="status-badge ${statusClass}">${record.status}</span></td>
+                        <td><button class="action-btn" onclick="viewRecord('${record.recordId}')">View</button></td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        // ==================== PAGINATION ====================
+        function updatePagination(total, page, totalPagesCount) {
+            totalPages = totalPagesCount;
+            document.getElementById('paginationInfo').textContent = 
+                `Showing ${((page-1)*10)+1}-${Math.min(page*10, total)} of ${total} records`;
+            
+            let buttons = '';
+            
+            // Previous button
+            buttons += `<button class="page-btn" onclick="changePage(${page - 1})" ${page <= 1 ? 'disabled' : ''}>Previous</button>`;
+            
+            // Page numbers
+            for (let i = Math.max(1, page - 2); i <= Math.min(totalPages, page + 2); i++) {
+                buttons += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            }
+            
+            if (totalPages > page + 2) {
+                buttons += `<button class="page-btn" disabled>...</button>`;
+                buttons += `<button class="page-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+            }
+            
+            // Next button
+            buttons += `<button class="page-btn" onclick="changePage(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>Next</button>`;
+            
+            document.getElementById('paginationButtons').innerHTML = buttons;
+        }
+
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            fetchRecords();
+        }
+
+        // ==================== FILTERS ====================
+        function applyFilters() {
+            currentPage = 1;
+            fetchRecords();
+        }
+
+        function resetFilters() {
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            document.getElementById('areaFilter').value = '';
+            document.getElementById('vehicleFilter').value = '';
+            applyFilters();
+        }
+
+        // ==================== TABS ====================
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            currentPage = 1;
+            fetchRecords();
+        }
+
+        // ==================== EXPORT CHART ====================
+        async function exportChart(type, event) {
+            if (!event) event = window.event;
+            
+            // Close any open dropdowns
+            const chartDropdown = document.getElementById('chartDropdown');
+            if (chartDropdown) chartDropdown.classList.remove('show');
+            
+            if (!chartData || chartData.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            try {
+                // Show loading on the clicked button
+                const btn = event.target.closest('.dropdown-item, .btn-export');
+                if (btn) {
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exporting...';
+                    btn.style.pointerEvents = 'none';
+                }
+
+                // Prepare data for chart
+                const vehicleCounts = {};
+                chartData.forEach(record => {
+                    vehicleCounts[record.vehicleType] = (vehicleCounts[record.vehicleType] || 0) + 1;
+                });
+
+                const labels = Object.keys(vehicleCounts);
+                const data = Object.values(vehicleCounts);
+
+                // Create a temporary canvas for chart
+                const canvas = document.createElement('canvas');
+                canvas.width = 800;
+                canvas.height = 600;
+                canvas.style.width = '800px';
+                canvas.style.height = '600px';
+                document.body.appendChild(canvas);
+
+                // Create chart
+                const ctx = canvas.getContext('2d');
+                
+                // Define colors for charts
+                const colors = ['#38bdf8', '#fbbf24', '#ef4444', '#10b981', '#8b5cf6', '#f97316'];
+                
+                let chartConfig = {
+                    type: type,
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Vehicle Count',
+                            data: data,
+                            backgroundColor: type === 'pie' ? colors.slice(0, labels.length) : colors[0],
+                            borderColor: type === 'pie' ? '#ffffff' : colors[0],
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: type === 'line' ? true : false
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: `Traffic Records - ${type.charAt(0).toUpperCase() + type.slice(1)} Chart`,
+                                font: { size: 20, weight: 'bold' },
+                                padding: 20
+                            },
+                            legend: { 
+                                display: type === 'pie',
+                                position: 'bottom',
+                                labels: { font: { size: 14 } }
+                            }
+                        }
+                    }
+                };
+
+                // Add scales for bar and line charts
+                if (type === 'bar' || type === 'line') {
+                    chartConfig.options.scales = {
+                        y: { 
+                            beginAtZero: true, 
+                            title: { 
+                                display: true, 
+                                text: 'Number of Vehicles',
+                                font: { size: 14 }
+                            },
+                            grid: { color: '#e2e8f0' }
+                        },
+                        x: { 
+                            title: { 
+                                display: true, 
+                                text: 'Vehicle Type',
+                                font: { size: 14 }
+                            },
+                            grid: { display: false }
+                        }
+                    };
+                }
+
+                // Create and render chart
+                const chart = new Chart(ctx, chartConfig);
+                
+                // Wait for chart to render
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Convert to PNG and download
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `traffic_chart_${type}_${new Date().toISOString().split('T')[0]}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    // Clean up
+                    document.body.removeChild(canvas);
+                    chart.destroy();
+
+                    // Reset button
+                    if (btn) {
+                        btn.innerHTML = originalText;
+                        btn.style.pointerEvents = 'auto';
+                    }
+                }, 'image/png', 1.0);
+
+            } catch (error) {
+                console.error('Chart export error:', error);
+                alert('Error generating chart');
+            }
+        }
+
+        // ==================== EXPORT TO EXCEL ====================
+        async function exportExcel(event) {
+            if (!event) event = window.event;
+            
+            try {
+                // Show loading - find the button that was clicked
+                const btn = event.target.closest('.btn-export');
+                if (!btn) {
+                    console.error('Button not found');
+                    return;
+                }
+                
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exporting...';
+                btn.disabled = true;
+                
+                // Build URL with current filters
+                const from = document.getElementById('dateFrom').value;
+                const to = document.getElementById('dateTo').value;
+                const area = document.getElementById('areaFilter').value;
+                const type = document.getElementById('vehicleFilter').value;
+                
+                let url = 'http://localhost:3000/api/traffic-records?limit=1000';
+                if (from) url += `&from=${from}`;
+                if (to) url += `&to=${to}`;
+                if (area) url += `&area=${area}`;
+                if (type) url += `&type=${type}`;
+                if (currentTab === 'emergency') url += `&emergency=true`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (!data.records || data.records.length === 0) {
+                    alert('No records to export');
+                    return;
+                }
+                
+                // Prepare data for Excel
+                const excelData = data.records.map(record => ({
+                    'Record ID': record.recordId,
+                    'Date & Time': new Date(record.dateTime).toLocaleString('en-IN'),
+                    'Vehicle Type': record.vehicleType,
+                    'Area': record.area,
+                    'Status': record.status
+                }));
+                
+                // Create worksheet
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(excelData);
+                
+                // Adjust column widths
+                const colWidths = [
+                    { wch: 15 }, // Record ID
+                    { wch: 20 }, // Date & Time
+                    { wch: 15 }, // Vehicle Type
+                    { wch: 20 }, // Area
+                    { wch: 10 }  // Status
+                ];
+                ws['!cols'] = colWidths;
+                
+                // Add to workbook
+                XLSX.utils.book_append_sheet(wb, ws, 'Traffic Records');
+                
+                // Generate filename with current date
+                const date = new Date().toISOString().split('T')[0];
+                const filename = `Traffic_Records_${date}.xlsx`;
+                
+                // Download
+                XLSX.writeFile(wb, filename);
+                
+                // Reset button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                
+            } catch (error) {
+                console.error('Excel export error:', error);
+                alert('Error exporting to Excel');
+                
+                // Reset button if error
+                const btn = event.target.closest('.btn-export');
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        // ==================== EXPORT TO PDF ====================
+        async function exportPDF(event) {
+            if (!event) event = window.event;
+            
+            try {
+                // Show loading - find the button that was clicked
+                const btn = event.target.closest('.btn-export');
+                if (!btn) {
+                    console.error('Button not found');
+                    return;
+                }
+                
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exporting...';
+                btn.disabled = true;
+                
+                // Build URL with current filters
+                const from = document.getElementById('dateFrom').value;
+                const to = document.getElementById('dateTo').value;
+                const area = document.getElementById('areaFilter').value;
+                const type = document.getElementById('vehicleFilter').value;
+                
+                let url = 'http://localhost:3000/api/traffic-records?limit=1000';
+                if (from) url += `&from=${from}`;
+                if (to) url += `&to=${to}`;
+                if (area) url += `&area=${area}`;
+                if (type) url += `&type=${type}`;
+                if (currentTab === 'emergency') url += `&emergency=true`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (!data.records || data.records.length === 0) {
+                    alert('No records to export');
+                    return;
+                }
+                
+                // Create PDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('landscape');
+                
+                // Add title
+                doc.setFontSize(18);
+                doc.setTextColor(56, 189, 248);
+                doc.text('Traffic Records Report', 14, 20);
+                
+                // Add date
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                const today = new Date().toLocaleDateString('en-IN', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                doc.text(`Generated: ${today}`, 14, 28);
+                
+                // Prepare table data
+                const tableData = data.records.map(record => [
+                    record.recordId,
+                    new Date(record.dateTime).toLocaleString('en-IN'),
+                    record.vehicleType,
+                    record.area,
+                    record.status
+                ]);
+                
+                // Create table
+                doc.autoTable({
+                    startY: 35,
+                    head: [['Record ID', 'Date & Time', 'Vehicle Type', 'Area', 'Status']],
+                    body: tableData,
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [56, 189, 248],
+                        textColor: 255,
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: {
+                        fillColor: [245, 247, 250]
+                    },
+                    styles: {
+                        fontSize: 9,
+                        cellPadding: 3
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 30 },
+                        1: { cellWidth: 45 },
+                        2: { cellWidth: 25 },
+                        3: { cellWidth: 40 },
+                        4: { cellWidth: 20 }
+                    }
+                });
+                
+                // Add summary at bottom
+                const finalY = doc.lastAutoTable.finalY || 200;
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Total Records: ${data.total || data.records.length}`, 14, finalY + 10);
+                
+                // Generate filename
+                const date = new Date().toISOString().split('T')[0];
+                const filename = `Traffic_Records_${date}.pdf`;
+                
+                // Save PDF
+                doc.save(filename);
+                
+                // Reset button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                
+            } catch (error) {
+                console.error('PDF export error:', error);
+                alert('Error exporting to PDF');
+                
+                // Reset button if error
+                const btn = event.target.closest('.btn-export');
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        // ==================== VIEW RECORD WITH MAP ====================
+        function viewRecord(recordId) {
+            // Find the record from chartData
+            const record = chartData?.find(r => r.recordId === recordId);
+            
+            if (!record) {
+                alert('Record not found');
+                return;
+            }
+
+            // Show modal
+            const modal = document.getElementById('locationModal');
+            modal.classList.add('show');
+
+            // Update modal title
+            document.getElementById('modalTitle').textContent = `Location: ${record.area}`;
+
+            // Update details
+            document.getElementById('modalDetails').innerHTML = `
+                <div class="detail-item">
+                    <div class="detail-label">Record ID</div>
+                    <div class="detail-value">${record.recordId}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Vehicle Type</div>
+                    <div class="detail-value">${record.vehicleType}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Date & Time</div>
+                    <div class="detail-value">${new Date(record.dateTime).toLocaleString('en-IN')}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Status</div>
+                    <div class="detail-value" style="color: ${record.status === 'Priority' ? '#ef4444' : record.status === 'Slow' ? '#fb923c' : '#10b981'}">${record.status}</div>
+                </div>
+            `;
+
+            // Initialize map after a short delay to ensure modal is visible
+            setTimeout(() => {
+                initMap(record.area);
+            }, 200);
+        }
+
+        function initMap(area) {
+            // Define coordinates for real Coimbatore locations
+            const areaCoordinates = {
+                'R.S. Puram': [11.0208, 76.9558],
+                'Sulur': [11.0234, 76.9678],
+                'Townhall': [11.0045, 76.9616],
+                'Coimbatore Junction': [11.0008, 76.9633],
+                'Gandhipuram': [11.0345, 76.9456],
+                'Mettupalayam Road': [11.0389, 76.9589],
+                'Peelamedu': [11.0289, 76.9634],
+                'Singanallur': [11.0412, 76.9723],
+                'Saibaba Colony': [11.0168, 76.9558],
+                'Race Course': [11.0045, 76.9616]
+            };
+
+            // Get coordinates for the area or use default
+            const coords = areaCoordinates[area] || [11.0168, 76.9558];
+
+            // If map exists, remove it
+            if (map) {
+                map.remove();
+            }
+
+            // Create new map
+            map = L.map('modalMap').setView(coords, 15);
+
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add marker
+            if (currentMarker) {
+                currentMarker.remove();
+            }
+            currentMarker = L.marker(coords).addTo(map)
+                .bindPopup(`<b>${area}</b>`)
+                .openPopup();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('locationModal');
+            modal.classList.remove('show');
+            
+            // Clean up map
+            if (map) {
+                map.remove();
+                map = null;
+            }
+        }
+
+        // ==================== INITIALIZE ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUserProfile();
+            fetchRecords();
+            
+            // Refresh every 15 seconds
+            setInterval(fetchRecords, 15000);
+        });
+    </script>
+
+</body>
+
+</html>

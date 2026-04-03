@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic System Dashboard</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 270px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100%;
+            z-index: 100;
+        }
+
+        .logo-container {
+            padding: 25px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-container i {
+            font-size: 26px;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.15);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .nav-links {
+            list-style: none;
+            margin-top: 25px;
+            flex-grow: 1;
+            padding: 0 15px;
+        }
+
+        .nav-links li {
+            margin-bottom: 8px;
+        }
+
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .nav-links li a i {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-links li a:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .nav-links li a.active {
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.2) 0%, transparent 100%);
+            color: #38bdf8;
+        }
+
+        .nav-links li a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 24px;
+            background: #38bdf8;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .logout-container {
+            padding: 20px;
+            margin: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logout {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            color: #f87171;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .logout:hover {
+            background-color: rgba(248, 113, 113, 0.1);
+            color: #fff;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 0;
+            width: calc(100% - 260px);
+            min-height: 100vh;
+            background: #f8fafc;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-left h1 {
+            color: #1e293b;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-left p {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 8px 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .user-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .dashboard-content {
+            padding: 30px 40px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .summary-card {
+            background: #fff;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .summary-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .icon-blue {
+            background: rgba(56, 189, 248, 0.12);
+            color: #0ea5e9;
+        }
+
+        .icon-green {
+            background: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+        }
+
+        .icon-orange {
+            background: rgba(251, 146, 60, 0.12);
+            color: #fb923c;
+        }
+
+        .icon-red {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+        }
+
+        .summary-info h3 {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .summary-info .number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        /* New Cards Container */
+        .new-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .new-card {
+            background: #fff;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+        }
+
+        .new-card h3 {
+            color: #1e293b;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 5px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .status-low {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .status-medium {
+            background: rgba(251, 146, 60, 0.15);
+            color: #fb923c;
+            border: 1px solid #fb923c;
+        }
+
+        .status-high {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        /* Gauge */
+        .gauge-container {
+            position: relative;
+            height: 100px;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .gauge-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #10b981, #fb923c, #ef4444);
+            border-radius: 50px;
+            transition: width 0.5s ease;
+        }
+
+        .gauge-bg {
+            background: #e2e8f0;
+            height: 35px;
+            border-radius: 50px;
+            width: 100%;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .gauge-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        /* Timeline */
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .timeline-icon.low {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+
+        .timeline-icon.medium {
+            background: rgba(251, 146, 60, 0.15);
+            color: #fb923c;
+        }
+
+        .timeline-icon.high {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+
+        .timeline-icon.emergency {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-content .time {
+            font-size: 11px;
+            color: #64748b;
+            margin-bottom: 2px;
+        }
+
+        .timeline-content .event {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .graphs-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .graph-card {
+            background: #fff;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+        }
+
+        .graph-card.full-width {
+            grid-column: span 2;
+        }
+
+        .graph-card h3 {
+            color: #1e293b;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .graph-wrapper {
+            position: relative;
+            height: 280px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            color: #f87171;
+            margin-bottom: 20px;
+        }
+
+        .modal-card h3 {
+            color: #1e293b;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .modal-card p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.logout {
+            background: #f87171;
+            color: #fff;
+        }
+
+        .modal-btn.logout:hover {
+            background: #ef4444;
+            transform: translateY(-2px);
+        }
+
+        .modal-btn.cancel {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .modal-btn.cancel:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        @media (max-width: 1200px) {
+            .summary-cards,
+            .new-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .graphs-container {
+                grid-template-columns: 1fr;
+            }
+
+            .graph-card.full-width {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <i class="fa-solid fa-road"></i>
+            <span>Traffic System</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="dashboard.html" class="menu-item active" onclick="setActive(this)"><i
+                        class="fa-solid fa-house"></i><span>Home</span></a></li>
+            <li><a href="Trafficdensity.html" class="menu-item" onclick="setActive(this)"><i
+                        class="fa-solid fa-chart-line"></i><span>Traffic Density</span></a></li>
+            <li><a href="Emergencyvehicle.html" class="menu-item" onclick="setActive(this)"><i
+                        class="fa-solid fa-ambulance"></i><span>Emergency Vehicle</span></a></li>
+            <li><a href="Records.html" class="menu-item" onclick="setActive(this)"><i
+                        class="fa-solid fa-database"></i><span>Records</span></a></li>
+            <li><a href="admin.html" class="menu-item" onclick="setActive(this)"><i
+                        class="fa-solid fa-user-gear"></i><span>Admin Panel</span></a></li>
+        </ul>
+        <div class="logout-container">
+            <a href="#" class="logout" onclick="openLogoutModal(event)"><i
+                    class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-left">
+                <h1>Home</h1>
+                <p>Traffic Overview & Analytics</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">AD</div>
+                <div class="user-info">
+                    <h4 id="userName">Admin User</h4>
+                    <p id="userRole">Administrator</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <h2 class="section-title">Summary Cards</h2>
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="summary-icon icon-blue"><i class="fa-solid fa-car"></i></div>
+                    <div class="summary-info">
+                        <h3>Total Vehicles Today</h3>
+                        <div class="number" id="totalVehicles">8,542</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon icon-green"><i class="fa-solid fa-traffic-light"></i></div>
+                    <div class="summary-info">
+                        <h3>Active Signals</h3>
+                        <div class="number" id="activeSignals">24</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon icon-orange"><i class="fa-solid fa-ambulance"></i></div>
+                    <div class="summary-info">
+                        <h3>Emergency Vehicles</h3>
+                        <div class="number" id="emergencyVehicles">12</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon icon-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="summary-info">
+                        <h3>Congested Areas</h3>
+                        <div class="number" id="congestedAreas">5</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Features: Status Badge + Gauge + Timeline -->
+            <h2 class="section-title">Live Traffic Status</h2>
+            <div class="new-cards">
+                <!-- Status Badge Card -->
+                <div class="new-card">
+                    <h3><i class="fa-solid fa-circle-info" style="color: #38bdf8;"></i> Current Status</h3>
+                    <div id="statusBadge" class="status-badge status-low">Low Traffic</div>
+                    <p style="color: #64748b; font-size: 13px; margin-top: 10px;">Updated just now</p>
+                </div>
+
+                <!-- Gauge Card -->
+                <div class="new-card">
+                    <h3><i class="fa-solid fa-gauge-high" style="color: #38bdf8;"></i> Traffic Load</h3>
+                    <div class="gauge-container">
+                        <div class="gauge-bg">
+                            <div class="gauge-bar" id="gaugeBar" style="width: 30%;"></div>
+                        </div>
+                        <div class="gauge-label">
+                            <span>Low</span>
+                            <span id="gaugePercentage">30%</span>
+                            <span>High</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Card -->
+                <div class="new-card">
+                    <h3><i class="fa-solid fa-clock" style="color: #38bdf8;"></i> Recent Updates</h3>
+                    <div id="timelineContainer">
+                        <!-- Timeline items will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">Analytics & Graphs</h2>
+            <div class="graphs-container">
+                <div class="graph-card">
+                    <h3>Vehicle Flow Graph</h3>
+                    <div class="graph-wrapper"><canvas id="vehicleFlowChart"></canvas></div>
+                </div>
+                <div class="graph-card">
+                    <h3>Peak Traffic Time Chart</h3>
+                    <div class="graph-wrapper"><canvas id="peakTrafficChart"></canvas></div>
+                </div>
+                <div class="graph-card full-width">
+                    <h3>Area-wise Traffic Density Chart</h3>
+                    <div class="graph-wrapper"><canvas id="areaDensityChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Modal -->
+    <div class="modal-overlay" id="logoutModal">
+        <div class="modal-card">
+            <div class="modal-icon">
+                <i class="fa-solid fa-circle-question"></i>
+            </div>
+            <h3>Logout Confirmation</h3>
+            <p>Are you sure you want to logout?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeLogoutModal()">Cancel</button>
+                <button class="modal-btn logout" onclick="confirmLogout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // Chart instances
+        let vehicleFlowChart, peakTrafficChart, areaDensityChart;
+
+        // Real Coimbatore locations
+        const coimbatoreLocations = [
+            'R.S. Puram',
+            'Sulur',
+            'Townhall',
+            'Coimbatore Junction',
+            'Gandhipuram',
+            'Mettupalayam Road',
+            'Peelamedu',
+            'Singanallur',
+            'Saibaba Colony',
+            'Race Course'
+        ];
+
+        // Set active menu item
+        function setActive(element) {
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // ==================== LOGOUT MODAL FUNCTIONS ====================
+        function openLogoutModal(event) {
+            event.preventDefault();
+            document.getElementById('logoutModal').classList.add('show');
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').classList.remove('show');
+        }
+
+        function confirmLogout() {
+            localStorage.removeItem('user');
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('logoutModal');
+            if (event.target === modal) {
+                closeLogoutModal();
+            }
+        });
+
+        // Update user profile from localStorage
+        function updateUserProfile() {
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (userData.name) {
+                document.getElementById('userName').textContent = userData.name;
+                
+                // Update avatar initials
+                const nameParts = userData.name.split(' ');
+                let initials = '';
+                if (nameParts.length >= 2) {
+                    initials = nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0);
+                } else {
+                    initials = userData.name.substring(0, 2);
+                }
+                document.getElementById('userAvatar').textContent = initials.toUpperCase();
+            }
+            
+            if (userData.role) {
+                document.getElementById('userRole').textContent = 
+                    userData.role === 'admin' ? 'Administrator' : userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
+            }
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // Vehicle Flow Chart
+            const vehicleCtx = document.getElementById('vehicleFlowChart').getContext('2d');
+            vehicleFlowChart = new Chart(vehicleCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Vehicles',
+                        data: [6500, 7200, 6800, 8100, 7600, 5200, 4900],
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#38bdf8',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: '#f1f5f9' },
+                            title: { display: true, text: 'Vehicle Count' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            title: { display: true, text: 'Day' }
+                        }
+                    }
+                }
+            });
+
+            // Peak Traffic Chart
+            const peakCtx = document.getElementById('peakTrafficChart').getContext('2d');
+            peakTrafficChart = new Chart(peakCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['6AM', '8AM', '10AM', '12PM', '2PM', '4PM', '6PM', '8PM'],
+                    datasets: [{
+                        label: 'Traffic Level',
+                        data: [120, 450, 280, 320, 290, 480, 520, 180],
+                        backgroundColor: '#38bdf8',
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: '#f1f5f9' },
+                            title: { display: true, text: 'Traffic Level' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            title: { display: true, text: 'Time' }
+                        }
+                    }
+                }
+            });
+
+            // Area Density Chart - With real Coimbatore locations
+            const areaCtx = document.getElementById('areaDensityChart').getContext('2d');
+            areaDensityChart = new Chart(areaCtx, {
+                type: 'bar',
+                data: {
+                    labels: coimbatoreLocations.slice(0, 6),
+                    datasets: [{
+                        label: 'Density',
+                        data: [85, 65, 92, 45, 78, 55],
+                        backgroundColor: '#38bdf8',
+                        borderRadius: 8,
+                        borderSkipped: false,
+                        barThickness: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { 
+                            beginAtZero: true, 
+                            max: 100, 
+                            grid: { color: '#f1f5f9' },
+                            title: { display: true, text: 'Density %' }
+                        },
+                        y: { 
+                            grid: { display: false },
+                            title: { display: true, text: 'Location' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==================== UPDATE CHARTS WITH REAL DATA ====================
+        function updateChartsWithRealData(data) {
+            if (!data.feeds || data.feeds.length < 7) return;
+
+            const latest = data.feeds[data.feeds.length - 1];
+            
+            // Update Vehicle Flow Chart with last 7 entries
+            const last7Feeds = data.feeds.slice(-7);
+            const vehicleData = last7Feeds.map(feed => 
+                (parseInt(feed.field1 || 0) + parseInt(feed.field2 || 0) + parseInt(feed.field3 || 0) + parseInt(feed.field4 || 0)) || 5000
+            );
+            
+            if (vehicleFlowChart) {
+                vehicleFlowChart.data.datasets[0].data = vehicleData;
+                vehicleFlowChart.update();
+            }
+            
+            // Update Peak Traffic Chart with field5 data (Medium Traffic)
+            if (peakTrafficChart && latest.field5) {
+                const baseValue = parseInt(latest.field5) || 50;
+                const peakData = [
+                    baseValue * 0.4,
+                    baseValue * 1.2,
+                    baseValue * 1.5,
+                    baseValue * 1.3,
+                    baseValue * 1.1,
+                    baseValue * 1.4,
+                    baseValue * 1.8,
+                    baseValue * 0.6
+                ].map(v => Math.round(v));
+                
+                peakTrafficChart.data.datasets[0].data = peakData;
+                peakTrafficChart.update();
+            }
+
+            // Update Area Density Chart with field6 data
+            if (areaDensityChart && latest.field6) {
+                const baseDensity = parseInt(latest.field6) || 50;
+                const areaData = [
+                    baseDensity * 0.9,
+                    baseDensity * 1.2,
+                    baseDensity * 1.5,
+                    baseDensity * 0.8,
+                    baseDensity * 1.1,
+                    baseDensity * 0.7
+                ].map(v => Math.min(100, Math.max(20, Math.round(v))));
+                
+                areaDensityChart.data.datasets[0].data = areaData;
+                areaDensityChart.update();
+            }
+        }
+
+        // ==================== THINGSPEAK DATA FETCH ====================
+        async function fetchTrafficData() {
+            try {
+                const response = await fetch('http://localhost:3000/api/traffic-data');
+                const data = await response.json();
+                
+                if (data.feeds && data.feeds.length > 0) {
+                    const latest = data.feeds[0];
+                    
+                    // Update summary cards
+                    document.getElementById('totalVehicles').textContent = 
+                        (parseInt(latest.field1 || 0) + parseInt(latest.field2 || 0) + parseInt(latest.field3 || 0) + parseInt(latest.field4 || 0)).toLocaleString();
+                    document.getElementById('activeSignals').textContent = latest.field1 || '24';
+                    document.getElementById('emergencyVehicles').textContent = latest.field2 || '12';
+                    document.getElementById('congestedAreas').textContent = latest.field3 || '5';
+                    
+                    // Update status badge
+                    updateStatusBadge(latest);
+                    
+                    // Update gauge
+                    updateGauge(latest);
+                    
+                    // Update timeline
+                    updateTimeline(data.feeds);
+                    
+                    // Update charts
+                    updateChartsWithRealData(data);
+                }
+            } catch (error) {
+                console.error('Error fetching traffic data:', error);
+            }
+        }
+
+        function updateStatusBadge(data) {
+            const badge = document.getElementById('statusBadge');
+            
+            if (data.field6 && parseInt(data.field6) > 0) {
+                badge.textContent = 'Heavy Traffic';
+                badge.className = 'status-badge status-high';
+            } else if (data.field5 && parseInt(data.field5) > 0) {
+                badge.textContent = 'Medium Traffic';
+                badge.className = 'status-badge status-medium';
+            } else if (data.field4 && parseInt(data.field4) > 0) {
+                badge.textContent = 'Low Traffic';
+                badge.className = 'status-badge status-low';
+            } else {
+                badge.textContent = 'No Data';
+                badge.className = 'status-badge status-low';
+            }
+        }
+
+        function updateGauge(data) {
+            const gaugeBar = document.getElementById('gaugeBar');
+            const gaugePercentage = document.getElementById('gaugePercentage');
+            
+            const low = parseInt(data.field4 || 0);
+            const medium = parseInt(data.field5 || 0);
+            const high = parseInt(data.field6 || 0);
+            
+            const total = low + medium + high;
+            let percentage = 0;
+            
+            if (total > 0) {
+                percentage = ((low * 1 + medium * 2 + high * 3) / (total * 3)) * 100;
+            } else {
+                percentage = 30;
+            }
+            
+            gaugeBar.style.width = percentage + '%';
+            gaugePercentage.textContent = Math.round(percentage) + '%';
+        }
+
+        function updateTimeline(feeds) {
+            const container = document.getElementById('timelineContainer');
+            let html = '';
+            
+            const lastThree = feeds.slice(-3).reverse();
+            const locations = coimbatoreLocations;
+            
+            lastThree.forEach((feed, index) => {
+                const time = new Date(feed.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const locationIndex = (parseInt(feed.entry_id) || index) % locations.length;
+                const location = locations[locationIndex];
+                
+                if (feed.field6 && parseInt(feed.field6) > 0) {
+                    html += `
+                        <div class="timeline-item">
+                            <div class="timeline-icon high"><i class="fa-solid fa-exclamation"></i></div>
+                            <div class="timeline-content">
+                                <div class="time">${time}</div>
+                                <div class="event">Heavy Traffic - ${location}</div>
+                            </div>
+                        </div>
+                    `;
+                } else if (feed.field5 && parseInt(feed.field5) > 0) {
+                    html += `
+                        <div class="timeline-item">
+                            <div class="timeline-icon medium"><i class="fa-solid fa-clock"></i></div>
+                            <div class="timeline-content">
+                                <div class="time">${time}</div>
+                                <div class="event">Medium Traffic - ${location}</div>
+                            </div>
+                        </div>
+                    `;
+                } else if (feed.field4 && parseInt(feed.field4) > 0) {
+                    html += `
+                        <div class="timeline-item">
+                            <div class="timeline-icon low"><i class="fa-solid fa-check"></i></div>
+                            <div class="timeline-content">
+                                <div class="time">${time}</div>
+                                <div class="event">Low Traffic - ${location}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="timeline-item">
+                            <div class="timeline-icon low"><i class="fa-solid fa-circle"></i></div>
+                            <div class="timeline-content">
+                                <div class="time">${time}</div>
+                                <div class="event">No Data - ${location}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            container.innerHTML = html || '<div class="timeline-item">No recent updates</div>';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUserProfile();
+            initCharts();
+            fetchTrafficData();
+            setInterval(fetchTrafficData, 30000);
+        });
+    </script>
+</body>
+
+</html>
