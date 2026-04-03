@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Custom Notification Toast CSS -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
@@ -167,6 +168,72 @@
             background: #2c2b2b;
             color: white;
         }
+
+        /* Custom Toast Notification */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            background: #fff;
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-notification.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .toast-notification.error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .toast-notification.info {
+            border-left: 4px solid #38bdf8;
+        }
+
+        .toast-notification i {
+            font-size: 18px;
+        }
+
+        .toast-notification.success i {
+            color: #10b981;
+        }
+
+        .toast-notification.error i {
+            color: #ef4444;
+        }
+
+        .toast-notification.info i {
+            color: #38bdf8;
+        }
+
+        .toast-notification .toast-close {
+            margin-left: auto;
+            cursor: pointer;
+            color: #94a3b8;
+        }
     </style>
 </head>
 
@@ -270,17 +337,46 @@
 let emailVerified = false;
 let currentEmail = '';
 
+// ==================== TOAST NOTIFICATION FUNCTION ====================
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
+    else if (type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
+    else icon = '<i class="fas fa-info-circle"></i>';
+    
+    toast.innerHTML = `
+        ${icon}
+        <span>${message}</span>
+        <i class="fas fa-times toast-close"></i>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+    
+    // Close on click
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        toast.remove();
+    });
+}
+
 // ==================== EMAIL OTP FUNCTIONS ====================
 async function sendEmailOTP() {
     const email = document.getElementById('email').value;
     
     if (!email) {
-        alert('Enter email');
+        showToast('Please enter email', 'error');
         return;
     }
     
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        alert('Enter valid email address');
+        showToast('Enter valid email address', 'error');
         return;
     }
     
@@ -300,12 +396,12 @@ async function sendEmailOTP() {
         const data = await response.json();
         
         if (response.ok) {
-            alert(' OTP sent to your email! Please check inbox');
+            showToast('OTP sent to your email! Please check inbox', 'success');
         } else {
-            alert('Error: ' + (data.error || 'Failed to send OTP'));
+            showToast('Error: ' + (data.error || 'Failed to send OTP'), 'error');
         }
     } catch (error) {
-        alert('Connection error: ' + error.message);
+        showToast('Connection error: ' + error.message, 'error');
     } finally {
         btn.innerText = originalText;
         btn.disabled = false;
@@ -317,12 +413,12 @@ async function verifyEmail() {
     const email = currentEmail || document.getElementById('email').value;
     
     if (!otp) {
-        alert('Enter OTP');
+        showToast('Enter OTP', 'error');
         return;
     }
     
     if (otp.length !== 6) {
-        alert('OTP must be 6 digits');
+        showToast('OTP must be 6 digits', 'error');
         return;
     }
     
@@ -342,18 +438,18 @@ async function verifyEmail() {
         
         if (response.ok) {
             emailVerified = true;
-            alert(" Email Verified Successfully!");
+            showToast('Email Verified Successfully!', 'success');
             document.getElementById('emailOTP').disabled = true;
             document.getElementById('email').disabled = true;
             btn.innerText = "Verified ✓";
             btn.style.background = "#00c853";
         } else {
-            alert('Error: ' + (data.error || 'Invalid OTP'));
+            showToast('Error: ' + (data.error || 'Invalid OTP'), 'error');
             btn.innerText = originalText;
             btn.disabled = false;
         }
     } catch (error) {
-        alert('Connection error: ' + error.message);
+        showToast('Connection error: ' + error.message, 'error');
         btn.innerText = originalText;
         btn.disabled = false;
     }
@@ -364,7 +460,7 @@ async function handleSignup(event) {
     event.preventDefault();
 
     if (!emailVerified) {
-        alert(" Please verify Email OTP first");
+        showToast('Please verify Email OTP first', 'error');
         return;
     }
 
@@ -377,17 +473,17 @@ async function handleSignup(event) {
 
     // Validation
     if (!firstName || !lastName || !email || !password || !confirmPass || !role) {
-        alert('Please fill all fields');
+        showToast('Please fill all fields', 'error');
         return;
     }
 
     if (password !== confirmPass) {
-        alert('Passwords do not match');
+        showToast('Passwords do not match', 'error');
         return;
     }
 
     if (password.length < 6) {
-        alert('Password must be at least 6 characters');
+        showToast('Password must be at least 6 characters', 'error');
         return;
     }
 
@@ -412,13 +508,15 @@ async function handleSignup(event) {
         const data = await response.json();
 
         if (response.ok) {
-            alert(' Signup successful! Please login.');
-            window.location.href = 'login.html';
+            showToast('Signup successful! Please login.', 'success');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
         } else {
-            alert('Error: ' + (data.error || 'Signup failed'));
+            showToast('Error: ' + (data.error || 'Signup failed'), 'error');
         }
     } catch (error) {
-        alert('Connection error: ' + error.message);
+        showToast('Connection error: ' + error.message, 'error');
     } finally {
         btn.innerText = originalText;
         btn.disabled = false;

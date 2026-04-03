@@ -22,12 +22,10 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            /* Background Image */
             background: url('traffic.jpg') no-repeat center center/cover;
             position: relative;
         }
 
-        /* Overlay to darken background for readability */
         body::before {
             content: '';
             position: absolute;
@@ -43,7 +41,6 @@
             width: 400px;
             padding: 40px;
             border-radius: 20px;
-            /* Glassmorphism Effect */
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
@@ -58,7 +55,6 @@
                 opacity: 0;
                 transform: translateY(-20px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -108,7 +104,6 @@
             transition: 0.3s;
         }
 
-        /* Placeholder styling */
         ::placeholder {
             color: rgba(255, 255, 255, 0.6);
         }
@@ -120,13 +115,11 @@
             box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
         }
 
-        /* Custom Select Arrow */
         select {
             appearance: none;
             cursor: pointer;
         }
 
-        /* Role Description Box */
         .role-info {
             background: rgba(0, 0, 0, 0.3);
             padding: 10px 15px;
@@ -140,7 +133,6 @@
             transition: all 0.3s ease;
         }
 
-        /* CAPTCHA Styles */
         .captcha-container {
             display: flex;
             align-items: center;
@@ -192,11 +184,6 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
-        /* Dropdown changes */
-        .input-group option {
-            color: #000;
-        }
-
         .btn-login:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
@@ -226,13 +213,71 @@
             text-decoration: underline;
         }
 
-        /* Icon rotation on focus */
-        input:focus+i,
-        select:focus+i {
-            color: #00d2ff;
+        /* Toast Notification */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            background: #fff;
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease forwards;
         }
 
-        /* Forgot Password Modal */
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-notification.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .toast-notification.error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .toast-notification.info {
+            border-left: 4px solid #38bdf8;
+        }
+
+        .toast-notification i {
+            font-size: 18px;
+        }
+
+        .toast-notification.success i {
+            color: #10b981;
+        }
+
+        .toast-notification.error i {
+            color: #ef4444;
+        }
+
+        .toast-notification.info i {
+            color: #38bdf8;
+        }
+
+        .toast-notification .toast-close {
+            margin-left: auto;
+            cursor: pointer;
+            color: #94a3b8;
+        }
+
+        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -260,6 +305,7 @@
             padding: 30px;
             color: #fff;
             animation: slideUp 0.3s ease;
+            position: relative;
         }
 
         @keyframes slideUp {
@@ -361,7 +407,6 @@
                     <option value="admin">Admin</option>
                     <option value="police">Traffic Police</option>
                     <option value="operator">Operator</option>
-                    <option value="operator">Police</option>
                 </select>
                 <i class="fas fa-user-shield"></i>
             </div>
@@ -457,6 +502,33 @@
     </div>
 
     <script>
+        // ==================== TOAST NOTIFICATION ====================
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            
+            let icon = '';
+            if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
+            else if (type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
+            else icon = '<i class="fas fa-info-circle"></i>';
+            
+            toast.innerHTML = `
+                ${icon}
+                <span>${message}</span>
+                <i class="fas fa-times toast-close"></i>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+            
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+        }
+
         // ==================== ROLE DESCRIPTION ====================
         const roleData = {
             admin: "Admin → Full system access",
@@ -504,9 +576,8 @@
         async function handleLogin(event) {
             event.preventDefault();
 
-            // Validate CAPTCHA
             if (!validateCaptcha()) {
-                alert(' Incorrect CAPTCHA code. Please try again.');
+                showToast('Incorrect CAPTCHA code. Please try again.', 'error');
                 generateCaptcha();
                 return;
             }
@@ -516,7 +587,7 @@
             const role = roleSelect.value;
 
             if (!email || !password) {
-                alert('Please fill all fields');
+                showToast('Please fill all fields', 'error');
                 return;
             }
 
@@ -535,7 +606,6 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Store user data
                     localStorage.setItem('user', JSON.stringify({
                         email: email,
                         role: data.user?.role || role,
@@ -543,21 +613,22 @@
                         isLoggedIn: true
                     }));
 
-                    alert(' Login successful!');
+                    showToast('Login successful! Redirecting...', 'success');
                     
-                    // Redirect based on role
-                    if (data.user?.role === 'admin' || role === 'admin') {
-                        window.location.href = 'admin.html';
-                    } else {
-                        window.location.href = 'dashboard.html';
-                    }
+                    setTimeout(() => {
+                        if (data.user?.role === 'admin' || role === 'admin') {
+                            window.location.href = 'admin.html';
+                        } else {
+                            window.location.href = 'dashboard.html';
+                        }
+                    }, 1500);
                 } else {
-                    alert(' Error: ' + (data.error || 'Login failed'));
+                    showToast('Error: ' + (data.error || 'Login failed'), 'error');
                     generateCaptcha();
                 }
             } catch (error) {
                 console.error('Fetch error:', error);
-                alert(' Connection error: Cannot reach backend. Make sure server is running on https://traffic-control-system-y9s8.onrender.com');
+                showToast('Connection error: Cannot reach backend server', 'error');
             } finally {
                 btn.innerText = originalText;
                 btn.disabled = false;
@@ -587,7 +658,7 @@
             resetEmail = document.getElementById('resetEmail').value.trim();
 
             if (!resetEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resetEmail)) {
-                alert('Please enter a valid email');
+                showToast('Please enter a valid email', 'error');
                 return;
             }
 
@@ -605,20 +676,18 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert(' OTP sent to your email!');
+                    showToast('OTP sent to your email!', 'success');
                     
-                    // Move to step 2
                     document.getElementById('step1').classList.remove('active');
                     document.getElementById('step2').classList.add('active');
                     
-                    // Start timer
                     timeLeft = 300;
                     startResetTimer();
                 } else {
-                    alert(' Error: ' + (data.error || 'Failed to send OTP'));
+                    showToast('Error: ' + (data.error || 'Failed to send OTP'), 'error');
                 }
             } catch (error) {
-                alert(' Connection error: ' + error.message);
+                showToast('Connection error: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Send OTP';
@@ -647,7 +716,7 @@
             const otp = document.getElementById('otpInput').value.trim();
 
             if (!otp || otp.length !== 6) {
-                alert('Please enter 6-digit OTP');
+                showToast('Please enter 6-digit OTP', 'error');
                 return;
             }
 
@@ -665,15 +734,15 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert(' OTP verified!');
+                    showToast('OTP verified!', 'success');
                     document.getElementById('step2').classList.remove('active');
                     document.getElementById('step3').classList.add('active');
                     clearInterval(resetTimer);
                 } else {
-                    alert(' Error: ' + (data.error || 'Invalid OTP'));
+                    showToast('Error: ' + (data.error || 'Invalid OTP'), 'error');
                 }
             } catch (error) {
-                alert(' Connection error: ' + error.message);
+                showToast('Connection error: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Verify OTP';
@@ -690,12 +759,12 @@
             const confirmPass = document.getElementById('confirmPassword').value.trim();
 
             if (!newPass || newPass.length < 6) {
-                alert('Password must be at least 6 characters');
+                showToast('Password must be at least 6 characters', 'error');
                 return;
             }
 
             if (newPass !== confirmPass) {
-                alert('Passwords do not match');
+                showToast('Passwords do not match', 'error');
                 return;
             }
 
@@ -713,13 +782,15 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert(' Password reset successful! Please login.');
-                    closeForgotModal();
+                    showToast('Password reset successful! Please login.', 'success');
+                    setTimeout(() => {
+                        closeForgotModal();
+                    }, 1500);
                 } else {
-                    alert(' Error: ' + (data.error || 'Password reset failed'));
+                    showToast('Error: ' + (data.error || 'Password reset failed'), 'error');
                 }
             } catch (error) {
-                alert(' Connection error: ' + error.message);
+                showToast('Connection error: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Reset Password';
