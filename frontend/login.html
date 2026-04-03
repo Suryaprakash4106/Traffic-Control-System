@@ -89,6 +89,7 @@
             top: 50%;
             transform: translateY(-50%);
             color: #aaa;
+            z-index: 1;
         }
 
         input,
@@ -115,9 +116,25 @@
             box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
         }
 
+        /* DROPDOWN FIX - Makes options visible */
         select {
             appearance: none;
             cursor: pointer;
+            background-color: rgba(30, 30, 47, 0.95);
+        }
+
+        select option {
+            background-color: #1e1e2f;
+            color: #ffffff;
+            padding: 12px;
+        }
+
+        select option:hover {
+            background-color: #3a3a4a;
+        }
+
+        select:focus {
+            background-color: #1e1e2f;
         }
 
         .role-info {
