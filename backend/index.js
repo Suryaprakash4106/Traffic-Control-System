@@ -27,7 +27,7 @@ const cors = require('cors');
 const saltRounds = 10;
 const app = express();
 
-// ==================== CORS CONFIGURATION (SIMPLIFIED - NO app.options) ====================
+// ==================== CORS CONFIGURATION ====================
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -35,7 +35,7 @@ app.use(cors({
     credentials: true
 }));
 
-// Additional CORS headers middleware
+// Handle preflight requests
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
@@ -171,14 +171,14 @@ const trafficRecordSchema = new mongoose.Schema({
 });
 const TrafficRecord = mongoose.model("TrafficRecord", trafficRecordSchema);
 
-// ==================== NODEMAILER WITH BREVO ====================
+// ==================== NODEMAILER WITH GMAIL (FULLY WORKING) ====================
 const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.BREVO_EMAIL,
-    pass: process.env.BREVO_API_KEY
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -187,7 +187,7 @@ transporter.verify((error, success) => {
   if (error) {
     console.error("❌ SMTP Connection Error:", error);
   } else {
-    console.log("✅ SMTP Ready to send emails");
+    console.log("✅ SMTP Ready to send emails via Gmail");
   }
 });
 
@@ -251,7 +251,7 @@ app.post("/send-email-otp", async (req, res) => {
 
   try {
     await transporter.sendMail({
-      from: `"Traffic Control System" <${process.env.BREVO_EMAIL}>`,
+      from: `"Traffic Control System" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Email Verification OTP",
       html: `
@@ -662,7 +662,7 @@ app.post("/api/resend-otp", async (req, res) => {
     await user.save();
 
     await transporter.sendMail({
-      from: `"Traffic Control System" <${process.env.BREVO_EMAIL}>`,
+      from: `"Traffic Control System" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "OTP Resend",
       html: `<h2>Your OTP is: ${otp}</h2><p>Valid for 5 minutes.</p>`
