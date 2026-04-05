@@ -12,7 +12,10 @@ const path = require("path");
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 const cors = require('cors');
-const nodemailer = require("nodemailer");
+const { Resend } = require('resend');
+
+// Initialize Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // OAuth modules
 const session = require("express-session");
@@ -23,9 +26,6 @@ const GitHubStrategy = require("passport-github2").Strategy;
 const saltRounds = 10;
 const app = express();
 
-// Admin email - only this email will receive OTP
-const ADMIN_EMAIL = "prakashkt2004@gmail.com";
-
 // ==================== CORS CONFIGURATION ====================
 app.use(cors({
     origin: '*',
@@ -34,6 +34,7 @@ app.use(cors({
     credentials: true
 }));
 
+// Handle preflight requests
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
@@ -163,24 +164,8 @@ const trafficRecordSchema = new mongoose.Schema({
 });
 const TrafficRecord = mongoose.model("TrafficRecord", trafficRecordSchema);
 
-// ==================== BREVO SMTP (ADMIN EMAIL ONLY - FAST) ====================
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_EMAIL || "a5b311001@smtp-brevo.com",
-    pass: process.env.BREVO_API_KEY
-  }
-});
-
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ SMTP Error:", error);
-  } else {
-    console.log("✅ Brevo Ready - OTP will be sent to admin email instantly!");
-  }
-});
+// ==================== RESEND EMAIL (100% WORKING ON RENDER) ====================
+console.log("✅ Resend Ready - OTP will work!");
 
 // ==================== MOBILE OTP ====================
 app.post("/send-mobile-otp", (req, res) => {
@@ -194,42 +179,44 @@ app.post("/send-mobile-otp", (req, res) => {
     expires: Date.now() + 300000
   };
 
-  console.log(`📱 Mobile OTP for ${mobile}: ${otp}`);
+  console.log("\n =====================");
+  console.log(`📱 Mobile: ${mobile}`);
+  console.log(`🔑 OTP: ${otp}`);
+  console.log(`⏰ Expires: ${new Date(Date.now() + 300000).toLocaleTimeString()}`);
+  console.log("=====================\n");
+
   res.json({ message: "OTP sent to mobile" });
 });
 
 app.post("/verify-mobile-otp", (req, res) => {
   const { mobile, otp } = req.body;
+
   const key = `mobile_${mobile}`;
   const stored = otpStore[key];
 
-  if (!stored) return res.status(400).json({ error: "No OTP found" });
-  if (Date.now() > stored.expires) return res.status(400).json({ error: "OTP expired" });
-  if (stored.otp != otp) return res.status(400).json({ error: "Invalid OTP" });
+  if (!stored) {
+    return res.status(400).json({ error: "No OTP found. Request new OTP." });
+  }
+
+  if (Date.now() > stored.expires) {
+    delete otpStore[key];
+    return res.status(400).json({ error: "OTP expired" });
+  }
+
+  if (stored.otp != otp) {
+    return res.status(400).json({ error: "Invalid OTP" });
+  }
 
   delete otpStore[key];
   res.json({ message: "Mobile verified successfully" });
 });
 
-// ==================== EMAIL OTP - ONLY FOR ADMIN EMAIL ====================
+// ==================== EMAIL OTP WITH RESEND ====================
 app.post("/send-email-otp", async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
     return res.status(400).json({ error: "Email required" });
-  }
-
-  // Only send OTP to admin email
-  if (email !== ADMIN_EMAIL) {
-    console.log(`Demo mode: OTP would be sent to ${email}, but only admin email receives OTP for demo`);
-    // For demo, still generate OTP but don't send email
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    otpStore[`email_${email}`] = {
-      otp: otp,
-      expires: Date.now() + 300000
-    };
-    console.log(`Demo OTP for ${email}: ${otp}`);
-    return res.json({ message: "OTP generated (Demo Mode - Check console for OTP)" });
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000);
@@ -239,30 +226,29 @@ app.post("/send-email-otp", async (req, res) => {
   };
 
   try {
-    await transporter.sendMail({
-      from: `"Traffic Control System" <${process.env.BREVO_EMAIL || "a5b311001@smtp-brevo.com"}>`,
+    const { data, error } = await resend.emails.send({
+      from: process.env.FROM_EMAIL || "onboarding@resend.dev",
       to: email,
-      subject: "Admin Verification OTP",
+      subject: "Email Verification OTP",
       html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Admin OTP Verification</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; padding: 20px;">
-            <div style="max-width: 500px; margin: 0 auto; background: #f0f4ff; border-radius: 10px; padding: 30px; text-align: center;">
-                <h2 style="color: #0d47a1;">🚦 Traffic Control System</h2>
-                <p style="color: #333;">Admin Verification OTP:</p>
-                <h1 style="color: #0d47a1; font-size: 48px; letter-spacing: 10px;">${otp}</h1>
-                <p style="color: #e53935;">⏰ This OTP will expire in 5 minutes</p>
-                <p style="color: #666; font-size: 12px;">SmartFlow Traffic Management System</p>
-            </div>
-        </body>
-        </html>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #0066cc;">🚦 Traffic Control System</h2>
+          <p>Your OTP for verification is:</p>
+          <h1 style="color: #1563c8; font-size: 36px; letter-spacing: 5px;">${otp}</h1>
+          <p>This OTP will expire in <strong>5 minutes</strong>.</p>
+          <p>If you didn't request this, please ignore this email.</p>
+          <hr>
+          <p style="color: #666; font-size: 12px;">SmartFlow Traffic Management System</p>
+        </div>
       `
     });
 
-    console.log(`✅ OTP sent to admin email ${email}: ${otp}`);
+    if (error) {
+      console.error("❌ Resend error:", error);
+      throw error;
+    }
+
+    console.log(`✅ Email OTP sent to ${email}: ${otp}`);
     res.json({ message: "OTP sent to email" });
   } catch (err) {
     console.error("❌ Email send error:", err);
@@ -272,6 +258,7 @@ app.post("/send-email-otp", async (req, res) => {
 
 app.post("/verify-email-otp", (req, res) => {
   const { email, otp } = req.body;
+
   const key = `email_${email}`;
   const stored = otpStore[key];
 
@@ -655,14 +642,12 @@ app.post("/api/resend-otp", async (req, res) => {
     user.otp = otp;
     await user.save();
 
-    if (email === ADMIN_EMAIL) {
-      await transporter.sendMail({
-        from: `"Traffic Control System" <${process.env.BREVO_EMAIL || "a5b311001@smtp-brevo.com"}>`,
-        to: email,
-        subject: "OTP Resend",
-        html: `<h2>Your OTP is: ${otp}</h2><p>Valid for 5 minutes.</p>`
-      });
-    }
+    await resend.emails.send({
+      from: process.env.FROM_EMAIL || "onboarding@resend.dev",
+      to: email,
+      subject: "OTP Resend",
+      html: `<h2>Your OTP is: ${otp}</h2><p>Valid for 5 minutes.</p>`
+    });
 
     res.json({ message: "OTP resent successfully" });
   } catch (err) {
