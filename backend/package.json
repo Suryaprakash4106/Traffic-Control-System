@@ -24,6 +24,7 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "pdf-parse": "^2.4.5",
-    "resend": "^6.10.0"
+    "resend": "^6.10.0",
+    "twilio": "^5.13.1"
   }
 }
