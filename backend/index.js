@@ -12,10 +12,7 @@ const path = require("path");
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 const cors = require('cors');
-const { Resend } = require('resend');
-
-// Initialize Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
+const nodemailer = require("nodemailer");
 
 // OAuth modules
 const session = require("express-session");
@@ -164,8 +161,24 @@ const trafficRecordSchema = new mongoose.Schema({
 });
 const TrafficRecord = mongoose.model("TrafficRecord", trafficRecordSchema);
 
-// ==================== RESEND EMAIL (100% WORKING ON RENDER) ====================
-console.log("✅ Resend Ready - OTP will work!");
+// ==================== BREVO SMTP (WORKS FOR ANY EMAIL) ====================
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.BREVO_EMAIL || "a5b311001@smtp-brevo.com",
+    pass: process.env.BREVO_API_KEY
+  }
+});
+
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("❌ SMTP Error:", error);
+  } else {
+    console.log("✅ Brevo Ready - OTP works for ANY email address!");
+  }
+});
 
 // ==================== MOBILE OTP ====================
 app.post("/send-mobile-otp", (req, res) => {
@@ -211,7 +224,7 @@ app.post("/verify-mobile-otp", (req, res) => {
   res.json({ message: "Mobile verified successfully" });
 });
 
-// ==================== EMAIL OTP WITH RESEND ====================
+// ==================== EMAIL OTP - ANY EMAIL CAN RECEIVE ====================
 app.post("/send-email-otp", async (req, res) => {
   const { email } = req.body;
 
@@ -226,8 +239,8 @@ app.post("/send-email-otp", async (req, res) => {
   };
 
   try {
-    const { data, error } = await resend.emails.send({
-      from: process.env.FROM_EMAIL || "onboarding@resend.dev",
+    await transporter.sendMail({
+      from: `"Traffic Control System" <${process.env.BREVO_EMAIL || "a5b311001@smtp-brevo.com"}>`,
       to: email,
       subject: "Email Verification OTP",
       html: `
@@ -242,11 +255,6 @@ app.post("/send-email-otp", async (req, res) => {
         </div>
       `
     });
-
-    if (error) {
-      console.error("❌ Resend error:", error);
-      throw error;
-    }
 
     console.log(`✅ Email OTP sent to ${email}: ${otp}`);
     res.json({ message: "OTP sent to email" });
@@ -642,8 +650,8 @@ app.post("/api/resend-otp", async (req, res) => {
     user.otp = otp;
     await user.save();
 
-    await resend.emails.send({
-      from: process.env.FROM_EMAIL || "onboarding@resend.dev",
+    await transporter.sendMail({
+      from: `"Traffic Control System" <${process.env.BREVO_EMAIL || "a5b311001@smtp-brevo.com"}>`,
       to: email,
       subject: "OTP Resend",
       html: `<h2>Your OTP is: ${otp}</h2><p>Valid for 5 minutes.</p>`
