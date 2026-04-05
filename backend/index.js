@@ -12,10 +12,7 @@ const path = require("path");
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 const cors = require('cors');
-const twilio = require('twilio');
-
-// Initialize Twilio client
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const nodemailer = require("nodemailer");
 
 // OAuth modules
 const session = require("express-session");
@@ -164,8 +161,24 @@ const trafficRecordSchema = new mongoose.Schema({
 });
 const TrafficRecord = mongoose.model("TrafficRecord", trafficRecordSchema);
 
-// ==================== TWILIO VERIFY - WORKS ON RENDER FREE TIER ====================
-console.log("✅ Twilio Verify Ready - OTP works for ANY email!");
+// ==================== BREVO SMTP (WORKING FOR ADMIN EMAIL) ====================
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.BREVO_EMAIL,
+    pass: process.env.BREVO_API_KEY
+  }
+});
+
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("❌ SMTP Error:", error);
+  } else {
+    console.log("✅ Brevo Ready - Email OTP is working!");
+  }
+});
 
 // ==================== MOBILE OTP ====================
 app.post("/send-mobile-otp", (req, res) => {
@@ -211,7 +224,7 @@ app.post("/verify-mobile-otp", (req, res) => {
   res.json({ message: "Mobile verified successfully" });
 });
 
-// ==================== EMAIL OTP WITH TWILIO VERIFY ====================
+// ==================== EMAIL OTP WITH BREVO (SENDS TO ANY EMAIL) ====================
 app.post("/send-email-otp", async (req, res) => {
   const { email } = req.body;
 
@@ -219,40 +232,66 @@ app.post("/send-email-otp", async (req, res) => {
     return res.status(400).json({ error: "Email required" });
   }
 
-  try {
-    const verification = await client.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID)
-      .verifications
-      .create({ to: email, channel: 'email' });
+  const otp = Math.floor(100000 + Math.random() * 900000);
+  otpStore[`email_${email}`] = {
+    otp: otp,
+    expires: Date.now() + 300000
+  };
 
-    console.log(`✅ OTP sent to ${email}`);
+  try {
+    await transporter.sendMail({
+      from: `"Traffic Control System" <${process.env.BREVO_EMAIL}>`,
+      to: email,
+      subject: "Email Verification OTP",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>OTP Verification</title>
+            <meta charset="UTF-8">
+        </head>
+        <body style="font-family: Arial, sans-serif; padding: 20px;">
+            <div style="max-width: 500px; margin: 0 auto; background: #f0f4ff; border-radius: 10px; padding: 30px; text-align: center;">
+                <h2 style="color: #0d47a1;">🚦 Traffic Control System</h2>
+                <p style="color: #333;">Your OTP for verification is:</p>
+                <h1 style="color: #0d47a1; font-size: 48px; letter-spacing: 10px;">${otp}</h1>
+                <p style="color: #e53935;">⏰ This OTP will expire in 5 minutes</p>
+                <p style="color: #666; font-size: 12px;">SmartFlow Traffic Management System</p>
+            </div>
+        </body>
+        </html>
+      `
+    });
+
+    console.log(`✅ Email OTP sent to ${email}: ${otp}`);
     res.json({ message: "OTP sent to email" });
-  } catch (error) {
-    console.error("❌ Twilio error:", error);
-    res.status(500).json({ error: "Failed to send OTP: " + error.message });
+  } catch (err) {
+    console.error("❌ Email send error:", err);
+    res.status(500).json({ error: "Email send failed: " + err.message });
   }
 });
 
-app.post("/verify-email-otp", async (req, res) => {
+app.post("/verify-email-otp", (req, res) => {
   const { email, otp } = req.body;
 
-  if (!email || !otp) {
-    return res.status(400).json({ error: "Email and OTP required" });
+  const key = `email_${email}`;
+  const stored = otpStore[key];
+
+  if (!stored) {
+    return res.status(400).json({ error: "No OTP found. Request new OTP." });
   }
 
-  try {
-    const verificationCheck = await client.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID)
-      .verificationChecks
-      .create({ to: email, code: otp });
-
-    if (verificationCheck.status === 'approved') {
-      res.json({ message: "Email verified successfully" });
-    } else {
-      res.status(400).json({ error: "Invalid OTP" });
-    }
-  } catch (error) {
-    console.error("❌ Verification error:", error);
-    res.status(500).json({ error: "Verification failed" });
+  if (Date.now() > stored.expires) {
+    delete otpStore[key];
+    return res.status(400).json({ error: "OTP expired" });
   }
+
+  if (stored.otp != otp) {
+    return res.status(400).json({ error: "Invalid OTP" });
+  }
+
+  delete otpStore[key];
+  res.json({ message: "Email verified successfully" });
 });
 
 // ==================== SIGNUP ====================
@@ -618,9 +657,12 @@ app.post("/api/resend-otp", async (req, res) => {
     user.otp = otp;
     await user.save();
 
-    await client.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID)
-      .verifications
-      .create({ to: email, channel: 'email' });
+    await transporter.sendMail({
+      from: `"Traffic Control System" <${process.env.BREVO_EMAIL}>`,
+      to: email,
+      subject: "OTP Resend",
+      html: `<h2>Your OTP is: ${otp}</h2><p>Valid for 5 minutes.</p>`
+    });
 
     res.json({ message: "OTP resent successfully" });
   } catch (err) {
