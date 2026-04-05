@@ -27,7 +27,7 @@ const cors = require('cors');
 const saltRounds = 10;
 const app = express();
 
-// ==================== CORS CONFIGURATION (FULLY FIXED) ====================
+// ==================== CORS CONFIGURATION (SIMPLIFIED - NO app.options) ====================
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -35,19 +35,14 @@ app.use(cors({
     credentials: true
 }));
 
-// Handle preflight requests - FIXED: Changed '*' to '/*'
-app.options('/*', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, X-Requested-With, Accept');
-    res.sendStatus(200);
-});
-
 // Additional CORS headers middleware
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
     next();
 });
 
@@ -176,7 +171,7 @@ const trafficRecordSchema = new mongoose.Schema({
 });
 const TrafficRecord = mongoose.model("TrafficRecord", trafficRecordSchema);
 
-// ==================== NODEMAILER WITH BREVO (FIXED) ====================
+// ==================== NODEMAILER WITH BREVO ====================
 const transporter = nodemailer.createTransport({
   host: "smtp-relay.brevo.com",
   port: 587,
@@ -240,7 +235,7 @@ app.post("/verify-mobile-otp", (req, res) => {
   res.json({ message: "Mobile verified successfully" });
 });
 
-// ==================== EMAIL OTP (FULLY WORKING) ====================
+// ==================== EMAIL OTP ====================
 app.post("/send-email-otp", async (req, res) => {
   const { email } = req.body;
 
@@ -273,7 +268,7 @@ app.post("/send-email-otp", async (req, res) => {
     });
 
     console.log(`✅ Email OTP sent to ${email}: ${otp}`);
-    res.json({ message: "OTP sent to email", otp: otp }); // otp included for testing
+    res.json({ message: "OTP sent to email" });
   } catch (err) {
     console.error("❌ Email send error:", err);
     res.status(500).json({ error: "Email send failed: " + err.message });
