@@ -21,29 +21,40 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const GitHubStrategy = require("passport-github2").Strategy;
 
-// CORS fix
+// CORS
 const cors = require('cors');
 
 const saltRounds = 10;
 const app = express();
 
-// CORS middleware
+// ==================== CORS CONFIGURATION (FIXED) ====================
 app.use(cors({
     origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept'],
     credentials: true
 }));
 
+// Handle preflight requests explicitly
+app.options('*', (req, res) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, X-Requested-With, Accept');
+    res.sendStatus(200);
+});
+
+// Additional CORS headers middleware
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     next();
 });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration - Use memory store (for Render compatibility)
+// Session configuration
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "opsmind_secret",
@@ -75,17 +86,21 @@ app.get("/", (req, res) => {
     res.send("Backend Working - Traffic System API");
 });
 
-// -------------------- FIX: Use PORT from environment variable --------------------
+// Test endpoint for debugging
+app.post("/test-email", async (req, res) => {
+    console.log("Test endpoint hit!");
+    res.json({ message: "Backend is working!" });
+});
+
 const PORT = process.env.PORT || 3000;
 
 // -------------------- MongoDB connection --------------------
 async function connectDB() {
   try {
-    // Use MONGOURI (from your .env) not MONGO_URI
     await mongoose.connect(process.env.MONGOURI);
-    console.log(" MongoDB Atlas connected");
+    console.log("✅ MongoDB Atlas connected");
   } catch (err) {
-    console.error(" MongoDB connection error:", err);
+    console.error("❌ MongoDB connection error:", err);
   }
 }
 connectDB();
@@ -122,7 +137,7 @@ const pdfVectorSchema = new mongoose.Schema({
 });
 const PdfVector = mongoose.model("PdfVector", pdfVectorSchema);
 
-// User Schema with all fields for admin panel
+// User Schema
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, unique: true, required: true },
@@ -161,17 +176,26 @@ const trafficRecordSchema = new mongoose.Schema({
 });
 const TrafficRecord = mongoose.model("TrafficRecord", trafficRecordSchema);
 
-// -------------------- Nodemailer --------------------
+// ==================== NODEMAILER WITH BREVO ====================
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: process.env.BREVO_EMAIL,
+    pass: process.env.BREVO_API_KEY
   },
   tls: {
     rejectUnauthorized: false
+  }
+});
+
+// Verify SMTP connection on startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("❌ SMTP Connection Error:", error);
+  } else {
+    console.log("✅ SMTP Ready to send emails");
   }
 });
 
@@ -188,9 +212,9 @@ app.post("/send-mobile-otp", (req, res) => {
   };
 
   console.log("\n =====================");
-  console.log(` Mobile: ${mobile}`);
-  console.log(` OTP: ${otp}`);
-  console.log(` Expires: ${new Date(Date.now() + 300000).toLocaleTimeString()}`);
+  console.log(`📱 Mobile: ${mobile}`);
+  console.log(`🔑 OTP: ${otp}`);
+  console.log(`⏰ Expires: ${new Date(Date.now() + 300000).toLocaleTimeString()}`);
   console.log("=====================\n");
 
   res.json({ message: "OTP sent to mobile" });
@@ -233,25 +257,27 @@ app.post("/send-email-otp", async (req, res) => {
 
   try {
     await transporter.sendMail({
-      from: `"Traffic Control System" <${process.env.EMAIL_USER}>`,
+      from: `"Traffic Control System" <${process.env.BREVO_EMAIL}>`,
       to: email,
       subject: "Email Verification OTP",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #0066cc;">Traffic Control System</h2>
+          <h2 style="color: #0066cc;">🚦 Traffic Control System</h2>
           <p>Your OTP for verification is:</p>
           <h1 style="color: #1563c8; font-size: 36px; letter-spacing: 5px;">${otp}</h1>
           <p>This OTP will expire in <strong>5 minutes</strong>.</p>
           <p>If you didn't request this, please ignore this email.</p>
+          <hr>
+          <p style="color: #666; font-size: 12px;">SmartFlow Traffic Management System</p>
         </div>
       `
     });
 
-    console.log(` Email OTP sent to ${email}: ${otp}`);
+    console.log(`✅ Email OTP sent to ${email}: ${otp}`);
     res.json({ message: "OTP sent to email" });
   } catch (err) {
-    console.error("Email send error:", err);
-    res.status(500).json({ error: "Email send failed" });
+    console.error("❌ Email send error:", err);
+    res.status(500).json({ error: "Email send failed: " + err.message });
   }
 });
 
@@ -301,7 +327,7 @@ app.post("/signup", async (req, res) => {
       loginHistory: []
     });
 
-    console.log(` New user created: ${email}`);
+    console.log(`✅ New user created: ${email}`);
     res.json({ 
       message: "Signup successful", 
       user: { 
@@ -311,7 +337,7 @@ app.post("/signup", async (req, res) => {
       } 
     });
   } catch (err) {
-    console.error("Signup error:", err);
+    console.error("❌ Signup error:", err);
     res.status(500).json({ error: "Signup failed" });
   }
 });
@@ -335,7 +361,6 @@ app.post("/api/login", async (req, res) => {
       return res.status(400).json({ error: "Invalid password" });
     }
 
-    // Update last login and history
     user.lastLogin = new Date();
     user.loginHistory.push({
       time: new Date(),
@@ -345,7 +370,7 @@ app.post("/api/login", async (req, res) => {
     });
     await user.save();
 
-    console.log(` User logged in: ${email}`);
+    console.log(`✅ User logged in: ${email}`);
     res.json({ 
       message: "Login successful", 
       user: { 
@@ -356,7 +381,7 @@ app.post("/api/login", async (req, res) => {
       } 
     });
   } catch (err) {
-    console.error("Login error:", err);
+    console.error("❌ Login error:", err);
     res.status(500).json({ error: "Login failed" });
   }
 });
@@ -380,7 +405,7 @@ app.post("/api/logout", async (req, res) => {
 
     res.json({ message: "Logout tracked" });
   } catch (err) {
-    console.error("Logout error:", err);
+    console.error("❌ Logout error:", err);
     res.status(500).json({ error: "Logout tracking failed" });
   }
 });
@@ -399,10 +424,10 @@ app.post("/reset-password", async (req, res) => {
     user.password = hashedPassword;
     await user.save();
 
-    console.log(` Password reset for: ${email}`);
+    console.log(`✅ Password reset for: ${email}`);
     res.json({ message: "Password reset successful" });
   } catch (err) {
-    console.error("Password reset error:", err);
+    console.error("❌ Password reset error:", err);
     res.status(500).json({ error: "Password reset failed" });
   }
 });
@@ -479,11 +504,11 @@ async function fetchAndStoreTrafficData() {
         });
         
         await newRecord.save();
-        console.log(` Record stored: ${recordId}`);
+        console.log(`✅ Record stored: ${recordId}`);
       }
     }
   } catch (error) {
-    console.error("Error storing traffic data:", error.message);
+    console.error("❌ Error storing traffic data:", error.message);
   }
 }
 
@@ -544,7 +569,7 @@ app.get("/api/admin/users", async (req, res) => {
     const users = await User.find({}, { password: 0 });
     res.json({ users });
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error("❌ Error fetching users:", error);
     res.status(500).json({ error: "Failed to fetch users" });
   }
 });
@@ -566,7 +591,7 @@ app.put("/api/admin/users/:id/status", async (req, res) => {
 
     res.json({ message: `User ${status} successfully`, user });
   } catch (error) {
-    console.error("Error updating user status:", error);
+    console.error("❌ Error updating user status:", error);
     res.status(500).json({ error: "Failed to update user status" });
   }
 });
@@ -598,7 +623,7 @@ app.get("/api/admin/activity/:userId", async (req, res) => {
       activity: user.loginHistory.sort((a, b) => b.time - a.time)
     });
   } catch (error) {
-    console.error("Error fetching user activity:", error);
+    console.error("❌ Error fetching user activity:", error);
     res.status(500).json({ error: "Failed to fetch user activity" });
   }
 });
@@ -643,10 +668,10 @@ app.post("/api/resend-otp", async (req, res) => {
     await user.save();
 
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: `"Traffic Control System" <${process.env.BREVO_EMAIL}>`,
       to: email,
       subject: "OTP Resend",
-      text: `Your new OTP is: ${otp}`
+      html: `<h2>Your OTP is: ${otp}</h2><p>Valid for 5 minutes.</p>`
     });
 
     res.json({ message: "OTP resent successfully" });
@@ -703,5 +728,5 @@ app.get("/auth/github/callback",
 
 // ==================== Start server ====================
 app.listen(PORT, '0.0.0.0', () =>
-  console.log(` Server running on port ${PORT}`)
+  console.log(`🚀 Server running on port ${PORT}`)
 );
