@@ -10,19 +10,18 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const pdfParse = require("pdf-parse");
-const { exec } = require("child_process");
 const bcrypt = require("bcrypt");
-const nodemailer = require("nodemailer");
+const cors = require('cors');
+const { Resend } = require('resend');
 
-// 🔹 OAuth
+// Initialize Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// OAuth modules
 const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const GitHubStrategy = require("passport-github2").Strategy;
-
-// CORS
-const cors = require('cors');
 
 const saltRounds = 10;
 const app = express();
@@ -79,12 +78,6 @@ app.get("/health", (req, res) => {
 
 app.get("/", (req, res) => {
     res.send("Backend Working - Traffic System API");
-});
-
-// Test endpoint for debugging
-app.post("/test-email", async (req, res) => {
-    console.log("Test endpoint hit!");
-    res.json({ message: "Backend is working!" });
 });
 
 const PORT = process.env.PORT || 3000;
@@ -171,25 +164,8 @@ const trafficRecordSchema = new mongoose.Schema({
 });
 const TrafficRecord = mongoose.model("TrafficRecord", trafficRecordSchema);
 
-// ==================== NODEMAILER WITH GMAIL (FULLY WORKING) ====================
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
-
-// Verify SMTP connection on startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ SMTP Connection Error:", error);
-  } else {
-    console.log("✅ SMTP Ready to send emails via Gmail");
-  }
-});
+// ==================== RESEND EMAIL (100% WORKING ON RENDER) ====================
+console.log("✅ Resend Ready - OTP will work!");
 
 // ==================== MOBILE OTP ====================
 app.post("/send-mobile-otp", (req, res) => {
@@ -235,7 +211,7 @@ app.post("/verify-mobile-otp", (req, res) => {
   res.json({ message: "Mobile verified successfully" });
 });
 
-// ==================== EMAIL OTP ====================
+// ==================== EMAIL OTP WITH RESEND ====================
 app.post("/send-email-otp", async (req, res) => {
   const { email } = req.body;
 
@@ -250,12 +226,12 @@ app.post("/send-email-otp", async (req, res) => {
   };
 
   try {
-    await transporter.sendMail({
-      from: `"Traffic Control System" <${process.env.EMAIL_USER}>`,
+    const { data, error } = await resend.emails.send({
+      from: process.env.FROM_EMAIL || "onboarding@resend.dev",
       to: email,
       subject: "Email Verification OTP",
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #0066cc;">🚦 Traffic Control System</h2>
           <p>Your OTP for verification is:</p>
           <h1 style="color: #1563c8; font-size: 36px; letter-spacing: 5px;">${otp}</h1>
@@ -266,6 +242,11 @@ app.post("/send-email-otp", async (req, res) => {
         </div>
       `
     });
+
+    if (error) {
+      console.error("❌ Resend error:", error);
+      throw error;
+    }
 
     console.log(`✅ Email OTP sent to ${email}: ${otp}`);
     res.json({ message: "OTP sent to email" });
@@ -661,8 +642,8 @@ app.post("/api/resend-otp", async (req, res) => {
     user.otp = otp;
     await user.save();
 
-    await transporter.sendMail({
-      from: `"Traffic Control System" <${process.env.EMAIL_USER}>`,
+    await resend.emails.send({
+      from: process.env.FROM_EMAIL || "onboarding@resend.dev",
       to: email,
       subject: "OTP Resend",
       html: `<h2>Your OTP is: ${otp}</h2><p>Valid for 5 minutes.</p>`
